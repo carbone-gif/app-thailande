@@ -732,16 +732,14 @@ body{
     </div>
   </div>
   <nav class="top-nav" id="top-nav">
-    <button onclick="switchTab('aujourdhui',this)">📅 Aujourd'hui</button>
-    <button class="active" onclick="switchTab('itinerary',this)">🗓 Itinéraire</button>
+    <button class="active" onclick="switchTab('home',this)">🏠 Home</button>
+    <button onclick="switchTab('itinerary',this)">🗓 Itinéraire</button>
     <button onclick="switchTab('carte',this)">🗺 Carte</button>
-    <button onclick="switchTab('meteo',this)">🌦 Météo</button>
-    <button onclick="switchTab('argent',this)">💱 Argent</button>
+    <button onclick="switchTab('guide',this)">📍 Guide</button>
     <button onclick="switchTab('transport',this)">🚆 Transport</button>
     <button onclick="switchTab('thai',this)">🗣 Thaï</button>
     <button onclick="switchTab('sos',this)">🚨 SOS</button>
     <button onclick="switchTab('checklist',this)">✅ Checklist</button>
-    <button onclick="switchTab('guide',this)">📍 Guide</button>
     <button onclick="switchTab('carnet',this)">📓 Carnet</button>
     <button onclick="switchTab('claude',this)">🤖 IA</button>
   </nav>
@@ -750,16 +748,30 @@ body{
 <div class="page">
 
 <!-- AUJOURD'HUI -->
-<div id="tab-aujourdhui" class="tab-panel" style="display:none">
-  <div id="today-content"></div>
-</div>
-
-<!-- ─── ITINÉRAIRE ─── -->
-<div id="tab-itinerary" class="tab-panel">
+<!-- HOME -->
+<div id="tab-home" class="tab-panel">
+  <div id="home-jminus"></div>
   <div id="urgents-banner" class="urgents-banner" style="display:none">
     <div class="urgents-title">🚨 À réserver MAINTENANT</div>
     <div id="urgents-list"></div>
   </div>
+  <div class="inset-title">💱 Convertisseur rapide</div>
+  <div class="conv-card">
+    <div class="conv-dir-row">
+      <button class="fpill active" id="btn-thb-eur" onclick="setDirection('thb')">฿ → €</button>
+      <button class="fpill" id="btn-eur-thb" onclick="setDirection('eur')">€ → ฿</button>
+    </div>
+    <div class="conv-from-label" id="conv-from-label">Montant en bahts (฿)</div>
+    <input class="conv-input" type="number" id="conv-input" placeholder="1000" oninput="convert()">
+    <div class="conv-result" id="conv-output">—&nbsp;<span id="conv-to-unit" style="font-size:18px;font-weight:400">€</span></div>
+    <div id="rate-block" style="font-size:11px;color:var(--label2);margin-top:4px"></div>
+  </div>
+  <div class="inset-title">🌦 Météo</div>
+  <div id="weather-content"><div class="loading-msg">🌤️ Chargement météo…</div></div>
+</div>
+
+<!-- ─── ITINÉRAIRE ─── -->
+<div id="tab-itinerary" class="tab-panel" style="display:none">
   <div class="filter-row" id="stage-filter">
     <button class="fpill active" data-f="all">Tout</button>
     <button class="fpill" data-f="bkk1">Bangkok 1</button>
@@ -795,24 +807,9 @@ body{
 </div>
 
 <!-- ─── MÉTÉO ─── -->
-<div id="tab-meteo" class="tab-panel" style="display:none">
-  <div id="weather-content"><div class="loading-msg">🌤️ Chargement météo…</div></div>
-</div>
-
 <!-- ─── ARGENT ─── -->
+<!-- ─── TAUX (données uniquement) ─── -->
 <div id="tab-argent" class="tab-panel" style="display:none">
-  <div id="rate-block"><div class="loading-msg">💱 Chargement du taux…</div></div>
-  <div class="inset-title">Convertisseur</div>
-  <div class="conv-card">
-    <div class="conv-dir-row">
-      <button class="fpill active" id="btn-thb-eur" onclick="setDirection('thb')">฿ → €</button>
-      <button class="fpill" id="btn-eur-thb" onclick="setDirection('eur')">€ → ฿</button>
-    </div>
-    <div class="conv-from-label" id="conv-from-label">Montant en bahts (฿)</div>
-    <input class="conv-input" type="number" id="conv-input" placeholder="1000" oninput="convert()">
-    <div class="conv-result" id="conv-output">—&nbsp;<span id="conv-to-unit" style="font-size:18px;font-weight:400">€</span></div>
-    <div id="conv-loading" style="font-size:12px;color:var(--label2);display:none">Chargement du taux…</div>
-  </div>
   <div class="inset-title">Budget estimé</div>
   <div class="budget-table">
     <div class="budget-thead">Hébergement &amp; vie courante</div>
@@ -1164,30 +1161,18 @@ body{
 
 <!-- ─── BOTTOM NAV (mobile only) ─── -->
 <nav class="bottom-nav" id="bottom-nav">
-  <button class="bnav-item active" data-tab="itinerary" onclick="switchTab('itinerary',this)">
-    <span class="bnav-icon">🗓</span><span>Itin.</span>
-  </button>
-  <button class="bnav-item" data-tab="carte" onclick="switchTab('carte',this)">
-    <span class="bnav-icon">🗺</span><span>Carte</span>
-  </button>
-  <button class="bnav-item" data-tab="meteo" onclick="switchTab('meteo',this)">
-    <span class="bnav-icon">🌦</span><span>Météo</span>
-  </button>
-  <button class="bnav-item" data-tab="argent" onclick="switchTab('argent',this)">
-    <span class="bnav-icon">💱</span><span>Argent</span>
-  </button>
-  <button class="bnav-item bnav-more" onclick="toggleMore()" id="more-btn">
-    <span class="bnav-icon">⋯</span><span>Plus</span>
-  </button>
+  <button class="bnav-item active" data-tab="home" onclick="switchTab('home',this)"><span class="bnav-icon">🏠</span><span>Home</span></button>
+  <button class="bnav-item" data-tab="itinerary" onclick="switchTab('itinerary',this)"><span class="bnav-icon">🗓</span><span>Itin.</span></button>
+  <button class="bnav-item" data-tab="carte" onclick="switchTab('carte',this)"><span class="bnav-icon">🗺</span><span>Carte</span></button>
+  <button class="bnav-item" data-tab="guide" onclick="switchTab('guide',this)"><span class="bnav-icon">📍</span><span>Guide</span></button>
+  <button class="bnav-item bnav-more" onclick="toggleMore()" id="more-btn"><span class="bnav-icon">⋯</span><span>Plus</span></button>
 </nav>
 <div class="more-menu" id="more-menu">
-  <button class="more-item" onclick="switchTabFromMore('aujourdhui')"><span class="more-icon">📅</span> Aujourd'hui</button>
   <button class="more-item" onclick="switchTabFromMore('transport')"><span class="more-icon">🚆</span> Transport</button>
   <button class="more-item" onclick="switchTabFromMore('rappels')"><span class="more-icon">⏰</span> Rappels</button>
   <button class="more-item" onclick="switchTabFromMore('thai')"><span class="more-icon">🗣</span> Thaï</button>
   <button class="more-item" onclick="switchTabFromMore('sos')"><span class="more-icon">🚨</span> SOS</button>
   <button class="more-item" onclick="switchTabFromMore('checklist')"><span class="more-icon">✅</span> Checklist</button>
-  <button class="more-item" onclick="switchTabFromMore('guide')"><span class="more-icon">📍</span> Guide</button>
   <button class="more-item" onclick="switchTabFromMore('carnet')"><span class="more-icon">📓</span> Carnet</button>
   <button class="more-item" onclick="switchTabFromMore('claude')"><span class="more-icon">🤖</span> IA</button>
 </div>
@@ -1464,7 +1449,7 @@ function switchTab(name, btnEl) {
   currentTab = name;
   closeMore();
 
-  if (name === 'aujourdhui') { renderToday(); setInterval(updateJminus, 1000); }
+  if (name === 'home') { renderHome(); }
   if (name === 'itinerary') { renderUrgents(); }
   if (name === 'carte') {
     if (!mapInited) { mapInited = true; setTimeout(initMap, 80); }
@@ -2405,6 +2390,34 @@ document.getElementById("guide-budget").addEventListener("click", function(e) {
 });
 
 /* ─── INIT ─── */
+/* ─── HOME ─── */
+function renderHome() {
+  /* Compteur J- ou jour en cours */
+  var el = document.getElementById('home-jminus'); if (!el) return;
+  var now = new Date();
+  var diff = DEPART - now;
+  if (diff > 0) {
+    var days = Math.floor(diff / 86400000);
+    el.innerHTML = '<div class="jminus-badge">' +
+      '<div><div class="jminus-num" id="jminus-num">J-' + days + '</div><div class="jminus-label">avant le départ</div></div>' +
+      '<div class="jminus-right"><div class="jminus-countdown" id="jminus-countdown">--:--:--</div><div style="font-size:10px;opacity:.5;margin-top:2px">23 juillet 2026</div></div>' +
+    '</div>';
+    setInterval(updateJminus, 1000); updateJminus();
+  } else if (now <= RETOUR) {
+    var dayN = Math.floor((now - DEPART) / 86400000) + 1;
+    var d = DAYS.find(function(x){return x.day===dayN;});
+    var title = d ? d.emoji + ' ' + d.title : 'Koh Chang 🏝️';
+    el.innerHTML = '<div class="jminus-badge">' +
+      '<div><div class="jminus-num" id="jminus-num" style="font-size:20px">Jour ' + dayN + '</div><div class="jminus-label">' + (d?d.date:'') + ' · ' + (d?d.stageLabel:'') + '</div></div>' +
+      '<div class="jminus-right" style="font-size:13px;font-weight:600;color:var(--teal)">' + title + '</div>' +
+    '</div>';
+  }
+  renderUrgents();
+  /* Charger météo et taux si pas encore fait */
+  if (!weatherFetched) { weatherFetched = true; fetchAllWeather(); }
+  if (!rateFetched) { rateFetched = true; fetchRate(); }
+}
+
 /* ─── COMPTEUR J- ─── */
 var DEPART = new Date('2026-07-23T00:00:00');
 var RETOUR = new Date('2026-08-18T23:59:59');
@@ -2548,6 +2561,7 @@ function renderToday() {
 }
 
 renderItinerary('all');
+renderHome();
 renderUrgents();
 renderPhrases('politesse');
 renderChecklist();
