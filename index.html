@@ -2110,12 +2110,8 @@ function loadRateFromCache() {
 }
 function showRate(rate, source) {
   currentRate = rate;
-  document.getElementById('rate-block').innerHTML =
-    '<div class="rate-hero">' +
-    '<div class="rate-label-top">EUR → THB · Taux du jour</div>' +
-    '<div class="rate-value">1 € = ' + rate.toFixed(2) + ' ฿</div>' +
-    '<div class="rate-source">' + source + '</div>' +
-    '</div>';
+  var el = document.getElementById('rate-block');
+  if (el) el.innerHTML = '1 € = <strong>' + rate.toFixed(2) + ' ฿</strong> <span style="color:var(--label3);font-size:10px">· ' + source + '</span>';
   convert();
 }
 function fetchRate() {
@@ -2146,7 +2142,7 @@ function fetchRate() {
             .catch(function() {
               var c = loadRateFromCache();
               if (c) { showRate(c.rate, '⚠️ Hors ligne — taux en cache'); }
-              else { currentRate = 38.0; document.getElementById('rate-block').innerHTML = '<div class="rate-hero"><div class="rate-label-top">Taux indicatif · EUR → THB</div><div class="rate-value">1 € ≈ 38,00 ฿</div><div class="rate-source">⚠️ Hors ligne — taux de secours</div></div>'; convert(); }
+              else { currentRate = 38.0; var rb = document.getElementById('rate-block'); if(rb) rb.innerHTML = '1 € ≈ 38,00 ฿ <span style="color:var(--label3);font-size:10px">· taux de secours</span>'; convert(); }
             });
         });
     });
@@ -2154,24 +2150,24 @@ function fetchRate() {
 var convDirection = 'thb';
 function setDirection(dir) {
   convDirection = dir;
-  document.getElementById('btn-thb-eur').classList.toggle('active', dir === 'thb');
-  document.getElementById('btn-eur-thb').classList.toggle('active', dir === 'eur');
-  document.getElementById('conv-from-label').textContent = dir === 'thb' ? 'Montant en bahts (฿)' : 'Montant en euros (€)';
-  document.getElementById('conv-to-unit').textContent = dir === 'thb' ? '€' : '฿';
-  document.getElementById('conv-input').placeholder = dir === 'thb' ? '1000' : '100';
-  document.getElementById('conv-input').value = '';
-  document.getElementById('conv-output').innerHTML = '—&nbsp;<span id="conv-to-unit" style="font-size:18px;font-weight:400">' + (dir === 'thb' ? '€' : '฿') + '</span>';
+  var btnTE = document.getElementById('btn-thb-eur'); if(btnTE) btnTE.classList.toggle('active', dir==='thb');
+  var btnET = document.getElementById('btn-eur-thb'); if(btnET) btnET.classList.toggle('active', dir==='eur');
+  var lbl = document.getElementById('conv-from-label'); if(lbl) lbl.textContent = dir==='thb' ? 'Montant en bahts (฿)' : 'Montant en euros (€)';
+  var inp = document.getElementById('conv-input'); if(inp){ inp.placeholder = dir==='thb'?'1000':'100'; inp.value=''; }
+  var out = document.getElementById('conv-output'); if(out) out.innerHTML = '—&nbsp;<span id="conv-to-unit" style="font-size:18px;font-weight:400">'+(dir==='thb'?'€':'฿')+'</span>';
 }
 function convert() {
-  var amount = parseFloat(document.getElementById('conv-input').value);
+  var inp = document.getElementById('conv-input');
   var out = document.getElementById('conv-output');
-  if (!currentRate) { document.getElementById('conv-loading').style.display='block'; return; }
-  document.getElementById('conv-loading').style.display='none';
-  var unit = convDirection === 'thb' ? '€' : '฿';
-  if (isNaN(amount) || amount <= 0) { out.innerHTML = '—&nbsp;<span style="font-size:18px;font-weight:400">' + unit + '</span>'; return; }
-  var result = convDirection === 'thb' ? (amount / currentRate).toFixed(2) : Math.round(amount * currentRate).toLocaleString('fr-FR');
-  out.innerHTML = result + '&nbsp;<span style="font-size:18px;font-weight:400">' + unit + '</span>';
+  if(!out) return;
+  var amount = parseFloat(inp ? inp.value : '');
+  if(!currentRate){ out.innerHTML='<span style="font-size:13px;color:var(--label2)">Chargement taux…</span>'; return; }
+  var unit = convDirection==='thb'?'€':'฿';
+  if(isNaN(amount)||amount<=0){ out.innerHTML='—&nbsp;<span style="font-size:18px;font-weight:400">'+unit+'</span>'; return; }
+  var result = convDirection==='thb'?(amount/currentRate).toFixed(2):Math.round(amount*currentRate).toLocaleString('fr-FR');
+  out.innerHTML = result+'&nbsp;<span style="font-size:18px;font-weight:400">'+unit+'</span>';
 }
+
 
 /* ─── PHRASES ─── */
 function renderPhrases(cat) {
@@ -2600,11 +2596,9 @@ function renderToday() {
 
 renderItinerary('all');
 renderHome();
-renderUrgents();
 renderPhrases('politesse');
 renderChecklist();
 refreshCarnetCounter();
-fetchRate(); rateFetched = true;
 if (window.speechSynthesis) {
   speechSynthesis.getVoices();
   speechSynthesis.onvoiceschanged = function() { speechSynthesis.getVoices(); };
