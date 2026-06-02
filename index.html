@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#007AFF">
-<title>🇹🇭 Thaïlande 2026</title>
+<title>🇹🇭 Thaïlande 2026 · v1.4</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"/>
@@ -1217,11 +1217,11 @@ var DAYS = [
   { day:6, date:'29 juil.', stage:'cm', stageLabel:'Chiang Mai', emoji:'🐘', title:'Elephant Nature Park',
     acts:['8h00 — Navette depuis le centre (incluse dans le programme)','Journée complète : nourrir et baigner les éléphants éthiquement','Déjeuner végétarien inclus sur place','Observation en liberté, aucun spectacle ni monte','🌙 Dîner léger — récupération'],
     tip:'Réserver sur elephantnaturepark.org — complet 2-3 semaines avant. 2 500฿/adulte, 2 000฿/enfant. Seul sanctuaire éthique de Chiang Mai.' },
-  { day:7, date:'30 juil.', stage:'cm', stageLabel:'Chiang Mai', emoji:'🌲', title:'Trek Karen — Jour 1',
-    acts:['8h00 — Départ avec guide privé (circuit 2J/1N)','2h de jeep dans les montagnes','Trek jungle 4-5h, niveau modéré, accessible à 10 ans','Passage par villages Hmong ou Akha','🌙 Nuit chez la famille Karen — dîner partagé'],
-    tip:'Chaussures imperméables OBLIGATOIRES. Sac waterproof, vêtements de rechange, poncho. Les enfants de 10 ans tiennent très bien ce trek.' },
-  { day:8, date:'31 juil.', stage:'cm', stageLabel:'Chiang Mai', emoji:'🏕️', title:'Trek Karen J2 · Retour Bangkok',
-    acts:['Réveil au village · petit-déjeuner partagé avec la famille Karen','Matinée libre ou courte randonnée','13h00 — Retour Chiang Mai en jeep','Vol Chiang Mai → Bangkok (AirAsia / Thai Smile, 1h, ~700-1200฿)','🌙 Arrivée Bangkok fin d\'après-midi'],
+  { day:7, date:'30 juil.', stage:'cm', stageLabel:'Chiang Mai', emoji:'⛰️', title:'Trek Chiang Dao — Jour 1',
+    acts:['8h00 — Départ Chiang Mai en minibus vers Chiang Dao (1h30)','Accueil au camp de base · équipement et briefing guide','Trek en montagne dans le parc national — forêt dense, grottes, vues sur le Doi Chiang Dao (2 195m)','Traversée de villages de minorités locales','🌙 Nuit en lodge ou chez l\'habitant — dîner partagé'],
+    tip:'Chiang Dao est la 2e plus haute montagne de Thaïlande. Trek modéré, accessible à 10 ans. Chaussures imperméables OBLIGATOIRES. Nuits fraîches en altitude — prévoir une couche chaude.' },
+  { day:8, date:'31 juil.', stage:'cm', stageLabel:'Chiang Mai', emoji:'🏕️', title:'Trek Chiang Dao J2 · Retour Bangkok',
+    acts:['Réveil en montagne · petit-déjeuner au lodge','Matinée randonnée ou visite grotte de Chiang Dao (l\'une des plus grandes de Thaïlande)','13h00 — Retour Chiang Mai en minibus','Vol Chiang Mai → Bangkok (AirAsia / Thai Smile, 1h, ~700-1200฿)','🌙 Arrivée Bangkok fin d\'après-midi'],
     tip:'Préférer le vol au train pour ce retour : arrivée plus tôt, temps de récupération avant Koh Chang.' },
   { day:9, date:'1 août', stage:'bkk2', stageLabel:'Bangkok 2', emoji:'🚂', title:'Bangkok · Marché ferroviaire Maeklong',
     acts:['Matinée repos et récupération','12h00 — Minivan vers le marché ferroviaire de Maeklong (Victory Monument, 35฿)','14h30 — Le train passe au milieu des stands — les étals s\'écartent!','15h30 — Retour Bangkok','🌙 Dîner Silom ou Sathorn'],
@@ -2245,19 +2245,54 @@ function resetChecklist() {
 function openIA(url, name) {
   var question = document.getElementById('claude-input').value.trim();
   if (!question) { document.getElementById('claude-input').focus(); return; }
+  /* Modale ville + jours */
+  var modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML =
+    '<div style="background:var(--card);border-radius:16px;padding:20px;width:100%;max-width:340px;box-shadow:0 8px 32px rgba(0,0,0,.3)">' +
+      '<div style="font-size:16px;font-weight:700;color:var(--label);margin-bottom:14px">🗺 Précise le contexte</div>' +
+      '<div style="font-size:12px;font-weight:600;color:var(--label2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Ville concernée</div>' +
+      '<div style="display:flex;gap:6px;margin-bottom:14px">' +
+        '<button onclick="selectVille(this,\'Bangkok\')" style="flex:1;padding:8px;border-radius:10px;border:1.5px solid var(--bg4);background:var(--bg3);color:var(--label);font-size:13px;font-weight:500;cursor:pointer;font-family:\'Inter\',sans-serif">🏙️ Bangkok</button>' +
+        '<button onclick="selectVille(this,\'Chiang Mai\')" style="flex:1;padding:8px;border-radius:10px;border:1.5px solid var(--bg4);background:var(--bg3);color:var(--label);font-size:13px;font-weight:500;cursor:pointer;font-family:\'Inter\',sans-serif">🌿 CM</button>' +
+        '<button onclick="selectVille(this,\'Koh Chang\')" style="flex:1;padding:8px;border-radius:10px;border:1.5px solid var(--bg4);background:var(--bg3);color:var(--label);font-size:13px;font-weight:500;cursor:pointer;font-family:\'Inter\',sans-serif">🏝️ KC</button>' +
+      '</div>' +
+      '<div style="font-size:12px;font-weight:600;color:var(--label2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Nombre de jours dans cette ville</div>' +
+      '<input id="ia-jours" type="number" min="1" max="20" placeholder="ex: 4" style="width:100%;font-size:16px;padding:8px 12px;border:1.5px solid var(--bg4);border-radius:10px;background:var(--bg);color:var(--label);outline:none;font-family:\'Inter\',sans-serif;margin-bottom:14px">' +
+      '<div style="display:flex;gap:8px">' +
+        '<button onclick="this.closest(\'div[style*=inset]\').remove()" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--sep-color);background:none;color:var(--label2);font-size:14px;cursor:pointer;font-family:\'Inter\',sans-serif">Annuler</button>' +
+        '<button onclick="confirmIA(\'' + url + '\',\'' + name + '\')" style="flex:1;padding:10px;border-radius:10px;border:none;background:var(--blue);color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:\'Inter\',sans-serif">Copier & Ouvrir</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(modal);
+  window._iaUrl = url; window._iaName = name; window._iaQuestion = question; window._iaVille = '';
+}
+function selectVille(btn, ville) {
+  btn.closest('div').querySelectorAll('button').forEach(function(b){ b.style.background='var(--bg3)'; b.style.borderColor='var(--bg4)'; b.style.color='var(--label)'; });
+  btn.style.background='var(--blue)'; btn.style.borderColor='var(--blue)'; btn.style.color='#fff';
+  window._iaVille = ville;
+}
+function confirmIA(url, name) {
+  var ville = window._iaVille || 'non précisée';
+  var jours = document.getElementById('ia-jours') ? document.getElementById('ia-jours').value : '';
+  var question = window._iaQuestion || '';
+  var joursLine = ville !== 'non précisée' && jours ? '• ' + ville + ' : ' + jours + ' jour(s) prévu(s)' : '';
   var context = [
     "=== CONTEXTE VOYAGE THAÏLANDE 2026 ===",
     "Famille : 2 adultes + 2 enfants jumeaux de 10 ans (nés le 11/05/2016).",
     "Style : économique, indépendant, curieux, téméraire. Pas de voyages organisés. Street food et restos locaux.",
-    "Dates : 23 juillet – 18 août 2026 (26 jours). Saison des pluies (mousson).",
+    "Dates : 23 juillet – 18 août 2026. Saison des pluies (mousson).",
     "",
     "ITINÉRAIRE :",
     "• 24–27 juil. → Bangkok (temples, klongs, marché ferroviaire, Chatuchak)",
     "• 27 juil. soir → Train de nuit Bangkok → Chiang Mai",
-    "• 28–31 juil. → Chiang Mai (Elephant Nature Park, trek Karen 2J/1N en village)",
+    "• 28–31 juil. → Chiang Mai (Elephant Nature Park, trek Chiang Dao 2J/1N)",
     "• 1–2 août → Bangkok (marché ferroviaire Maeklong, préparation Koh Chang)",
     "• 3–16 août → Koh Chang · Beach Club Villa by Utalay (Klong Prao Beach) — 13 nuits",
     "• 16–18 août → Bangkok (dernière journée, retour Paris le 18 août)",
+    "",
+    joursLine ? "PRÉCISION : " + joursLine : "",
+    "VILLE CONCERNÉE PAR LA QUESTION : " + ville,
     "",
     "LOGEMENT CONFIRMÉ : Beach Club Villa by Utalay, Koh Chang (Klong Prao Beach area).",
     "TRANSPORT : Van Boonsiri (1100฿/pers) pour Koh Chang. Scooter sur l'île (250฿/j).",
@@ -2265,7 +2300,10 @@ function openIA(url, name) {
     "=================================",
     "",
     "MA QUESTION : " + question
-  ].join("\n");
+  ].filter(Boolean).join("\n");
+  /* Fermer la modale */
+  var modal = document.querySelector('div[style*="inset:0"]');
+  if (modal) modal.remove();
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(context).then(showClaudeFeedback).catch(function() { fallbackCopy(context); });
   } else { fallbackCopy(context); }
