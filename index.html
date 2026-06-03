@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#007AFF">
-<title>🇹🇭 Thaïlande 2026 · v2.0</title>
+<title>🇹🇭 Thaïlande 2026 · v2.2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"/>
@@ -487,6 +487,26 @@ body{
 .guide-price-tag{font-size:12px;color:var(--label2);margin-bottom:4px}
 .guide-cta{font-size:12px;color:var(--blue);font-weight:500}
 .guide-empty{padding:32px;text-align:center;color:var(--label2);font-size:14px}
+/* guide perso */
+.guide-add-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;background:rgba(0,122,255,.07);border:1.5px dashed rgba(0,122,255,.3);border-radius:var(--rad-lg);color:var(--blue);font-size:14px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;margin-bottom:10px;}
+.guide-add-form{background:var(--card);border-radius:var(--rad-lg);padding:14px 16px;margin-bottom:12px;box-shadow:var(--sh-lg);display:none;border:2px solid var(--blue);}
+.guide-add-form.open{display:block}
+.guide-field{margin-bottom:10px;}
+.guide-field label{font-size:11px;font-weight:600;color:var(--label2);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px;}
+.guide-field input,.guide-field select,.guide-field textarea{width:100%;font-size:15px;font-family:'Inter',sans-serif;padding:8px 12px;border:1.5px solid var(--bg4);border-radius:10px;background:var(--bg);color:var(--label);outline:none;}
+.guide-field input:focus,.guide-field select:focus{border-color:var(--blue)}
+.guide-field textarea{min-height:56px;resize:none;line-height:1.5;}
+.guide-enrich-btn{width:100%;padding:11px;border:none;border-radius:10px;background:linear-gradient(135deg,#7c3aed,#4f1fbf);color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;margin-bottom:8px;}
+.guide-enrich-btn:disabled{opacity:.5;cursor:not-allowed}
+.guide-enrich-status{font-size:12px;color:var(--label2);text-align:center;padding:4px;min-height:18px;}
+.guide-perso-badge{font-size:10px;font-weight:700;background:rgba(0,122,255,.12);color:var(--blue);border-radius:99px;padding:2px 7px;flex-shrink:0;}
+.guide-visited-btn{display:flex;align-items:center;gap:6px;padding:10px 14px;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;width:100%;justify-content:center;margin-top:8px;}
+.guide-visited-btn.not-visited{background:rgba(52,199,89,.1);color:#248A3D;}
+.guide-visited-btn.visited{background:var(--green);color:#fff;}
+@media(prefers-color-scheme:dark){.guide-visited-btn.not-visited{color:var(--green)}}
+.guide-card.perso{border:1.5px solid rgba(0,122,255,.3);}
+.guide-card.visited-card{opacity:.65;}
+.visited-stamp{font-size:11px;font-weight:700;color:var(--green);margin-top:4px;}
 .dormir-note{
   background:rgba(52,199,89,.08);border-radius:var(--rad);
   padding:10px 14px;font-size:13px;color:#248A3D;
@@ -847,6 +867,7 @@ body{
       <button class="fpill" data-type="nature">🌿 Nature</button>
       <button class="fpill" data-type="transport">🚂 Transport</button>
       <button class="fpill" data-type="hebergement">🏠 Logement</button>
+      <button class="fpill" data-type="guide">⭐ Guide</button>
     </div>
   </div>
   <div id="leaflet-map"></div>
@@ -980,6 +1001,34 @@ body{
   </div>
   <div id="guide-main-content">
     <div id="guide-dormir-note" class="dormir-note" style="display:none">🛏 Logement uniquement pour Chiang Mai — Bangkok et Koh Chang déjà réservés.</div>
+    <button class="guide-add-btn" onclick="toggleGuideAddForm()">➕ Ajouter un lieu</button>
+    <div class="guide-add-form" id="guide-add-form">
+      <div class="guide-field"><label>Nom du lieu</label><input type="text" id="ga-name" placeholder="Ex: Café de l'Artiste"></div>
+      <div class="guide-field"><label>Ville</label>
+        <select id="ga-city" onchange="document.getElementById('ga-city-autre-wrap').style.display=this.value==='autre'?'':'none'">
+          <option value="bangkok">Bangkok</option>
+          <option value="chiangmai">Chiang Mai</option>
+          <option value="kohchang">Koh Chang</option>
+          <option value="autre">Autre...</option>
+        </select>
+      </div>
+      <div class="guide-field" id="ga-city-autre-wrap" style="display:none"><label>Préciser la ville</label><input type="text" id="ga-city-autre" placeholder="Ex: Chiang Rai"></div>
+      <div class="guide-field"><label>Catégorie</label>
+        <select id="ga-cat">
+          <option value="manger">🍜 Manger</option>
+          <option value="dormir">🛏 Dormir</option>
+          <option value="voir">👁 À voir</option>
+        </select>
+      </div>
+      <div class="guide-field"><label>URL source (optionnel)</label><input type="url" id="ga-url" placeholder="https://routard.com/..."></div>
+      <div class="guide-field"><label>Notes personnelles (optionnel)</label><textarea id="ga-notes" placeholder="Ce qui t'a attiré…"></textarea></div>
+      <button class="guide-enrich-btn" id="ga-enrich-btn" onclick="enrichGuideItem()">🤖 Enrichir avec l'IA</button>
+      <div class="guide-enrich-status" id="ga-status"></div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button onclick="toggleGuideAddForm()" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--sep-color);background:none;color:var(--label2);font-size:14px;cursor:pointer;font-family:'Inter',sans-serif;">Annuler</button>
+        <button onclick="saveGuideItemManual()" style="flex:1;padding:10px;border-radius:10px;border:none;background:var(--blue);color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;">Enregistrer sans IA</button>
+      </div>
+    </div>
     <div class="guide-grid" id="guide-cards"></div>
   </div>
   <div id="guide-detail" style="display:none"></div>
@@ -1528,7 +1577,7 @@ var currentTab = 'itinerary';
 
 /* ─── CLOCK ─── */
 /* ─── DÉTECTION NOUVELLE VERSION ─── */
-var APP_VERSION = '2.0';
+var APP_VERSION = '2.2';
 function checkForUpdate() {
   fetch(window.location.href + '?nocache=' + Date.now(), { cache: 'no-store' })
     .then(function(r) { return r.text(); })
@@ -2355,27 +2404,60 @@ function initMap() {
     renderMapMarkers();
   });
 }
+function buildGuideMarkers(city) {
+  var cityMap = { bangkok:'bangkok', chiangmai:'chiangmai', kohchang:'kohchang' };
+  var typeMap = { manger:'food', dormir:'hebergement', voir:'culture' };
+  var data = GUIDE_DATA[cityMap[city]]; if (!data) return [];
+  var markers = [];
+  ['manger','dormir','voir'].forEach(function(cat) {
+    (data[cat] || []).forEach(function(item) {
+      if (!item.lat || !item.lon) return;
+      markers.push({
+        name: item.name, lat: item.lat, lon: item.lon,
+        type: typeMap[cat], emoji: cat==='manger'?'🍜':cat==='dormir'?'🏠':'👁',
+        desc: item.desc.substring(0,80)+'…', isGuide: true, tip: item.tip,
+        price: item.price
+      });
+    });
+  });
+  return markers;
+}
+
 function renderMapMarkers() {
   markerLayer.clearLayers();
-  var list = (MARKERS[mapCity] || []).filter(function(m) { return mapType === 'all' || m.type === mapType; });
+  var baseList = (MARKERS[mapCity] || []);
+  var guideList = buildGuideMarkers(mapCity);
+  var list;
+  if (mapType === 'guide') {
+    list = guideList;
+  } else if (mapType === 'all') {
+    list = baseList.concat(guideList);
+  } else {
+    list = baseList.filter(function(m){ return m.type === mapType; })
+      .concat(guideList.filter(function(m){ return m.type === mapType; }));
+  }
   list.forEach(function(m) {
-    var icon = L.divIcon({
-      className:'', iconSize:[28,28], iconAnchor:[14,14],
-      html:'<div style="font-size:22px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))">' + m.emoji + '</div>'
-    });
+    var isGuide = !!m.isGuide;
+    var iconHtml = isGuide
+      ? '<div style="position:relative;width:28px;height:28px">'
+        + '<div style="font-size:22px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))">' + m.emoji + '</div>'
+        + '<div style="position:absolute;top:-4px;right:-4px;font-size:11px;line-height:1">⭐</div>'
+        + '</div>'
+      : '<div style="font-size:22px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))">' + m.emoji + '</div>';
+    var icon = L.divIcon({ className:'', iconSize:[28,28], iconAnchor:[14,14], html: iconHtml });
     var cmDeep = 'citymapper://directions?endcoord=' + m.lat + ',' + m.lon + '&endname=' + encodeURIComponent(m.name);
     var grabUrl = 'grab://open?screenType=BOOKING&destCoord=' + m.lat + ',' + m.lon + '&destName=' + encodeURIComponent(m.name);
     var gmUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + m.lat + ',' + m.lon;
-    var popup =
-      '<div style="font-family:system-ui;min-width:210px;padding:4px 0">' +
-        '<div style="font-size:14px;font-weight:600;margin-bottom:4px">' + m.emoji + ' ' + m.name + '</div>' +
-        '<div style="font-size:12px;color:#666;margin-bottom:10px;line-height:1.45">' + m.desc + '</div>' +
-        '<div style="display:flex;gap:5px;flex-wrap:wrap">' +
-          '<button onclick="openCityMapper(' + m.lat + ',' + m.lon + ',\'' + encodeURIComponent(m.name) + '\')" style="font-size:11px;padding:6px 9px;border-radius:8px;border:none;color:#fff;font-weight:600;background:#007AFF;cursor:pointer">🗺 CityMapper</button>' +
-          '<a href="' + grabUrl + '" style="font-size:11px;padding:6px 9px;border-radius:8px;text-decoration:none;color:#fff;font-weight:600;background:#00B14F;display:inline-block">🚗 Grab</a>' +
-          '<a href="' + gmUrl + '" target="_blank" style="font-size:11px;padding:6px 9px;border-radius:8px;text-decoration:none;color:#fff;font-weight:600;background:#EA4335;display:inline-block">📍 GMaps</a>' +
-        '</div>' +
-      '</div>';
+    var popup = '<div style="font-family:system-ui;min-width:210px;padding:4px 0">'
+      + (isGuide ? '<div style="font-size:11px;font-weight:700;color:#F59E0B;margin-bottom:3px">⭐ Sélection Guide</div>' : '')
+      + '<div style="font-size:14px;font-weight:600;margin-bottom:4px">' + m.name + '</div>'
+      + '<div style="font-size:12px;color:#666;margin-bottom:6px;line-height:1.45">' + m.desc + '</div>'
+      + (m.price ? '<div style="font-size:11px;color:#888;margin-bottom:8px">💰 ' + m.price + '</div>' : '')
+      + '<div style="display:flex;gap:5px;flex-wrap:wrap">'
+      + '<button onclick="openCityMapper(' + m.lat + ',' + m.lon + ',\'' + encodeURIComponent(m.name) + '\')" style="font-size:11px;padding:6px 9px;border-radius:8px;border:none;color:#fff;font-weight:600;background:#007AFF;cursor:pointer">🗺 CityMapper</button>'
+      + '<a href="' + grabUrl + '" style="font-size:11px;padding:6px 9px;border-radius:8px;text-decoration:none;color:#fff;font-weight:600;background:#00B14F;display:inline-block">🚗 Grab</a>'
+      + '<a href="' + gmUrl + '" target="_blank" style="font-size:11px;padding:6px 9px;border-radius:8px;text-decoration:none;color:#fff;font-weight:600;background:#EA4335;display:inline-block">📍 GMaps</a>'
+      + '</div></div>';
     L.marker([m.lat, m.lon], { icon:icon }).addTo(markerLayer).bindPopup(popup, { maxWidth:260 });
   });
 }
@@ -2693,6 +2775,151 @@ function showClaudeFeedback() {
 
 /* ─── GUIDE ─── */
 var guideCity = "bangkok", guideCat = "manger", guideBudget = "all";
+/* GUIDE PERSO */
+var GUIDE_PERSO_KEY = 'thai2026_guide_perso';
+var GUIDE_VISITED_KEY = 'thai2026_guide_visited';
+function loadGuidePerso() { try { return JSON.parse(localStorage.getItem(GUIDE_PERSO_KEY)) || []; } catch(e) { return []; } }
+function saveGuidePerso(arr) { try { localStorage.setItem(GUIDE_PERSO_KEY, JSON.stringify(arr)); } catch(e) {} }
+function loadGuideVisited() { try { return JSON.parse(localStorage.getItem(GUIDE_VISITED_KEY)) || {}; } catch(e) { return {}; } }
+function saveGuideVisited(obj) { try { localStorage.setItem(GUIDE_VISITED_KEY, JSON.stringify(obj)); } catch(e) {} }
+
+function toggleGuideAddForm() {
+  var form = document.getElementById('guide-add-form');
+  if (form) form.classList.toggle('open');
+  ['ga-name','ga-url','ga-notes'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  var st = document.getElementById('ga-status'); if(st) st.textContent='';
+}
+
+function getGaCity() {
+  var sel = document.getElementById('ga-city'); if (!sel) return 'bangkok';
+  if (sel.value === 'autre') { var a=document.getElementById('ga-city-autre'); return (a&&a.value.trim())?a.value.trim().toLowerCase().replace(/\s+/g,''):'autre'; }
+  return sel.value;
+}
+function getGaCityLabel() {
+  var sel = document.getElementById('ga-city'); if (!sel) return 'Bangkok';
+  var labels = { bangkok:'Bangkok', chiangmai:'Chiang Mai', kohchang:'Koh Chang' };
+  if (sel.value === 'autre') { var a=document.getElementById('ga-city-autre'); return (a&&a.value.trim())?a.value.trim():'Autre'; }
+  return labels[sel.value] || sel.value;
+}
+
+async function enrichGuideItem() {
+  var name = (document.getElementById('ga-name')||{}).value||''; name = name.trim();
+  if (!name) { document.getElementById('ga-status').textContent = 'Saisis le nom du lieu.'; return; }
+  if (!navigator.onLine) { document.getElementById('ga-status').textContent = 'Pas de connexion — utilise "Enregistrer sans IA".'; return; }
+  var btn = document.getElementById('ga-enrich-btn'); btn.disabled = true;
+  var status = document.getElementById('ga-status'); status.textContent = 'Recherche en cours...';
+  var cityLabel = getGaCityLabel();
+  var cat = document.getElementById('ga-cat').value;
+  var url = (document.getElementById('ga-url')||{}).value||'';
+  var notes = (document.getElementById('ga-notes')||{}).value||'';
+  var catLabel = { manger:'restaurant ou adresse food', dormir:'hebergement', voir:'lieu a visiter ou activite' }[cat] || cat;
+  var lat = null, lon = null;
+  try {
+    var nr = await fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(name+' '+cityLabel+' Thailand')+'&format=json&limit=1',{headers:{'Accept-Language':'fr'}});
+    var nd = await nr.json();
+    if (nd && nd[0]) { lat = parseFloat(nd[0].lat); lon = parseFloat(nd[0].lon); }
+  } catch(e) {}
+  var prompt = 'Expert voyage Thailande. Lieu: '+name+' a '+cityLabel+' ('+catLabel+'). '+(url?'Source: '+url+'. ':'')+( notes?'Notes: '+notes+'. ':'')+'Reponds UNIQUEMENT en JSON valide sans markdown: {"desc":"2-3 phrases","price":"fourchette","open":"horaires","tip":"conseil","tags":["local","sf","famille","insolite","gastro","resto"],"budget":1} budget 1=eco 2=confort 3=luxe, tags 1-3 valeurs.';
+  var enriched = null;
+  try {
+    var resp = await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:prompt}]})});
+    if (resp.status===529||resp.status===429) { status.textContent='Quota IA atteint, reessaie plus tard.'; btn.disabled=false; return; }
+    var rd = await resp.json();
+    var raw = (rd.content&&rd.content[0]&&rd.content[0].text)||'';
+    enriched = JSON.parse(raw.replace(/```json|```/g,'').trim());
+  } catch(e) { status.textContent='Erreur IA — enregistre sans IA.'; btn.disabled=false; return; }
+  var item = { id:Date.now(), name:name, city:getGaCity(), cityLabel:cityLabel, cat:cat, lat:lat||0, lon:lon||0, desc:enriched.desc||'', price:enriched.price||'--', open:enriched.open||'--', tip:enriched.tip||'', tags:enriched.tags||[], budget:enriched.budget||1, web:url, reviews:url?[url]:[], perso:true, notes:notes, enriched:true };
+  var perso = loadGuidePerso(); perso.push(item); saveGuidePerso(perso);
+  status.textContent = item.name + ' ajoute !';
+  btn.disabled = false;
+  setTimeout(function(){ toggleGuideAddForm(); renderGuide(); }, 1200);
+}
+
+function saveGuideItemManual() {
+  var name = (document.getElementById('ga-name')||{}).value||''; name = name.trim();
+  if (!name) { document.getElementById('ga-status').textContent = 'Saisis le nom.'; return; }
+  var url = (document.getElementById('ga-url')||{}).value||'';
+  var notes = (document.getElementById('ga-notes')||{}).value||'';
+  var item = { id:Date.now(), name:name, city:getGaCity(), cityLabel:getGaCityLabel(), cat:document.getElementById('ga-cat').value, lat:0, lon:0, desc:notes||'Lieu ajoute manuellement.', price:'--', open:'--', tip:url?'Source: '+url:'', tags:[], budget:1, web:url, reviews:url?[url]:[], perso:true, enriched:false };
+  var perso = loadGuidePerso(); perso.push(item); saveGuidePerso(perso);
+  toggleGuideAddForm(); renderGuide();
+}
+
+function deleteGuidePerso(id) {
+  if (!confirm('Supprimer ce lieu ?')) return;
+  saveGuidePerso(loadGuidePerso().filter(function(i){ return i.id!==id; }));
+  closeGuideDetail(); renderGuide();
+}
+
+function isVisited(item) {
+  var visited = loadGuideVisited();
+  var key = item.perso ? 'p_'+item.id : 'g_'+item.name;
+  return !!visited[key];
+}
+
+function markVisited(item) {
+  var visited = loadGuideVisited();
+  var key = item.perso ? 'p_'+item.id : 'g_'+item.name;
+  if (visited[key]) { delete visited[key]; saveGuideVisited(visited); showGuideDetailFull(item); return; }
+  visited[key] = { date: new Date().toLocaleDateString('fr-FR'), name: item.name };
+  saveGuideVisited(visited);
+  var notes = loadNotes();
+  var now = new Date();
+  var dayN = Math.floor((now - DEPART) / 86400000) + 1;
+  if (dayN >= 1 && dayN <= 26) {
+    var noteKey = 'day_'+dayN;
+    var existing = getNoteText(notes[noteKey]);
+    var lieu = getNoteLieu(notes[noteKey], item.cityLabel||item.name);
+    saveNoteObj(noteKey, existing+(existing?'\n':'')+item.name+' : '+( item.desc?item.desc.substring(0,60)+'...':''), lieu);
+  }
+  showGuideDetailFull(item);
+  alert(item.name + ' ajoute au carnet !');
+}
+
+function showGuideDetailIdx(idx) {
+  var item = window._guideItems[idx]; if (!item) return;
+  showGuideDetailFull(item);
+}
+
+function showGuideDetailFull(item) {
+  var bLabel = ["","$","$$","$$$"], bClass = ["","gb1","gb2","gb3"];
+  var tagLabels = { local:"Local", insolite:"Insolite", sf:"Street food", gastro:"Gastronomique", famille:"Famille", resto:"Resto" };
+  var tagClass = { local:"gtag-local", insolite:"gtag-insolite", sf:"gtag-sf", gastro:"gtag-gastro", famille:"gtag-famille", resto:"gtag-resto" };
+  var tagsHtml = (item.tags||[]).map(function(t){ return "<span class='gtag "+(tagClass[t]||"")+"'>"+(tagLabels[t]||t)+"</span>"; }).join('');
+  var reviewsHtml = '';
+  if (item.reviews && item.reviews.length) {
+    reviewsHtml = "<div class='detail-section'>Source</div>" +
+      item.reviews.map(function(u){ return "<a href='"+u+"' target='_blank' class='detail-link'>source</a>"; }).join('');
+  }
+  var gmUrl = item.lat ? "https://www.google.com/maps/search/?api=1&query="+item.lat+","+item.lon : "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(item.name);
+  var cmDeep = item.lat ? "citymapper://directions?endcoord="+item.lat+","+item.lon+"&endname="+encodeURIComponent(item.name) : '';
+  var visited = isVisited(item);
+  window.currentGuideItem = item;
+  var html = "<button class='back-btn' onclick='closeGuideDetail()'>Retour</button>";
+  if (item.perso) html += "<div style='display:flex;align-items:center;gap:6px;margin-bottom:8px'><span class='guide-perso-badge'>Ajoute par toi</span>"+(item.enriched?"<span style='font-size:11px;color:var(--label2)'>Enrichi par IA</span>":"")+"</div>";
+  html += "<div class='list-group' style='padding:14px 16px;margin-bottom:10px'>" +
+    "<div class='guide-card-header' style='margin-bottom:8px'><div class='guide-name' style='font-size:17px'>"+item.name+"</div><span class='gbadge "+bClass[item.budget||0]+"'>"+bLabel[item.budget||0]+"</span></div>" +
+    "<div class='guide-tags' style='margin-bottom:10px'>"+tagsHtml+"</div>" +
+    "<div class='detail-section'>Description</div><div class='detail-desc'>"+item.desc+"</div>" +
+    "<div class='detail-section'>Prix et Horaires</div><div class='detail-meta'>"+(item.price||'--')+" / "+(item.open||'--')+"</div>" +
+    (item.tip ? "<div class='detail-section'>Bon plan</div><div class='detail-tip'>"+item.tip+"</div>" : '') +
+    reviewsHtml +
+    "<div class='detail-section'>Y aller</div><div class='nav-btns'>" +
+    (item.web ? "<a href='"+item.web+"' target='_blank' class='nav-btn' style='background:#6D28D9'>Site</a>" : '') +
+    (cmDeep ? "<a href='"+cmDeep+"' class='nav-btn' style='background:#007AFF'>CityMapper</a>" : '') +
+    "<a href='grab://open?screenType=BOOKING&destCoord="+item.lat+","+item.lon+"&destName="+encodeURIComponent(item.name)+"' class='nav-btn' style='background:#00B14F'>Grab</a>" +
+    "<a href='"+gmUrl+"' target='_blank' class='nav-btn' style='background:#EA4335'>GMaps</a>" +
+    (item.lat ? "<button onclick='showOnAppMap("+item.lat+","+item.lon+",\'"+(item.name||'').replace(/'/g,"")+"\')' class='nav-btn' style='background:var(--blue)'>Carte</button>" : '') +
+    "</div>" +
+    "<button class='guide-visited-btn "+(visited?'visited':'not-visited')+"' onclick='markVisited(currentGuideItem)'>"+(visited?'Deja visite - Retirer':'J\'y suis alle !')+"</button>" +
+    (item.perso ? "<button onclick='deleteGuidePerso("+item.id+")' style='width:100%;padding:10px;margin-top:6px;border:none;border-radius:10px;background:rgba(255,59,48,.1);color:var(--red);font-size:13px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif'>Supprimer ce lieu</button>" : '') +
+    "</div>";
+  document.getElementById("guide-detail").innerHTML = html;
+  document.getElementById("guide-main-content").style.display = "none";
+  document.getElementById("guide-detail").style.display = "";
+  window.scrollTo(0,0);
+}
+
 function renderGuide() {
   var data = GUIDE_DATA[guideCity]; if (!data) return;
   document.getElementById("guide-detail").style.display = "none";
@@ -2702,22 +2929,33 @@ function renderGuide() {
   var items = (data[guideCat] || []).filter(function(item) {
     return guideBudget === "all" || item.budget === parseInt(guideBudget);
   });
+  var perso = loadGuidePerso().filter(function(p) {
+    return p.city === guideCity && p.cat === guideCat &&
+      (guideBudget === "all" || p.budget === parseInt(guideBudget));
+  });
+  var visited = loadGuideVisited();
   var bLabel = ["","$","$$","$$$"], bClass = ["","gb1","gb2","gb3"];
-  var tagLabels = { local:"🏠 Local", insolite:"✨ Insolite", sf:"🍢 Street food", gastro:"⭐ Gastronomique", famille:"👨‍👩‍👧 Famille", resto:"🍽 Resto" };
-  var tagClass = { local:"gtag-local", insolite:"gtag-insolite", sf:"gtag-sf", gastro:"gtag-gastro", famille:"gtag-famille", resto:"gtag-resto" };
-  if (!items.length) {
-    document.getElementById("guide-cards").innerHTML = "<div class='guide-empty'>Aucune adresse pour ce filtre.<br>Essaie un autre budget ou une autre catégorie.</div>"; return;
+  var allItems = items.map(function(i){ return { item:i, perso:false }; })
+    .concat(perso.map(function(i){ return { item:i, perso:true }; }));
+  if (!allItems.length) {
+    document.getElementById("guide-cards").innerHTML = "<div class='guide-empty'>Aucune adresse.<br>Ajoute un lieu avec le bouton ci-dessus.</div>"; return;
   }
-  window._guideItems = items;
-  document.getElementById("guide-cards").innerHTML = items.map(function(item, idx) {
-    var tagsHtml = (item.tags||[]).map(function(t) { return "<span class='gtag " + (tagClass[t]||"") + "'>" + (tagLabels[t]||t) + "</span>"; }).join("");
-    return "<div class='guide-card' onclick='showGuideDetail(" + idx + ")'>" +
-      "<div class='guide-card-header'><div class='guide-name'>" + item.name + "</div>" +
-      "<span class='gbadge " + bClass[item.budget] + "'>" + bLabel[item.budget] + "</span></div>" +
-      "<div class='guide-tags'>" + tagsHtml + "</div>" +
-      "<div class='guide-desc-short'>" + item.desc.substring(0,100) + "…</div>" +
-      "<div class='guide-price-tag'>💰 " + item.price + "</div>" +
-      "<div class='guide-cta'>Voir le détail →</div></div>";
+  window._guideItems = allItems.map(function(x){ return x.item; });
+  document.getElementById("guide-cards").innerHTML = allItems.map(function(x, idx) {
+    var item = x.item; var isPerso = x.perso;
+    var vKey = isPerso ? "p_"+item.id : "g_"+item.name;
+    var isVis = !!visited[vKey];
+    var tagLabels = { local:"Local", insolite:"Insolite", sf:"Street food", gastro:"Gastro", famille:"Famille", resto:"Resto" };
+    var tagClass = { local:"gtag-local", insolite:"gtag-insolite", sf:"gtag-sf", gastro:"gtag-gastro", famille:"gtag-famille", resto:"gtag-resto" };
+    var tagsHtml = (item.tags||[]).map(function(t){ return "<span class='gtag "+(tagClass[t]||"")+"'>"+(tagLabels[t]||t)+"</span>"; }).join("");
+    return "<div class='guide-card"+(isPerso?" perso":"")+(isVis?" visited-card":"")+"' onclick='showGuideDetailIdx("+idx+")'>" +
+      "<div class='guide-card-header'><div class='guide-name'>"+item.name+(isPerso?" [+]":"")+"</div>"+
+      "<span class='gbadge "+bClass[item.budget||0]+"'>"+bLabel[item.budget||0]+"</span></div>" +
+      "<div class='guide-tags'>"+tagsHtml+"</div>" +
+      "<div class='guide-desc-short'>"+(item.desc||"").substring(0,100)+"...</div>" +
+      "<div class='guide-price-tag'>Prix: "+(item.price||"--")+"</div>" +
+      (isVis ? "<div class='visited-stamp'>Visite le "+visited[vKey].date+"</div>" : "<div class='guide-cta'>Voir le detail</div>") +
+    "</div>";
   }).join("");
 }
 function showGuideDetail(idx) {
@@ -2769,10 +3007,20 @@ function showOnAppMap(lat, lon, name) {
   setTimeout(function() {
     if (map) {
       map.setView([lat,lon], 15);
-      var icon = L.divIcon({ className:"", html:"<div style='font-size:26px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4))'>📌</div>", iconSize:[28,28], iconAnchor:[14,14] });
-      var m = L.marker([lat,lon], {icon:icon}).addTo(map)
-        .bindPopup("<div style='font-family:system-ui;font-size:13px;font-weight:600'>" + name + "</div>", {maxWidth:200}).openPopup();
-      setTimeout(function() { map.removeLayer(m); }, 8000);
+      var icon = L.divIcon({ className:"", html:"<div style='font-size:26px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4))'>⭐</div>", iconSize:[28,28], iconAnchor:[14,14] });
+      var cmDeep = 'citymapper://directions?endcoord=' + lat + ',' + lon + '&endname=' + encodeURIComponent(name);
+      var grabUrl = 'grab://open?screenType=BOOKING&destCoord=' + lat + ',' + lon + '&destName=' + encodeURIComponent(name);
+      var gmUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + lat + ',' + lon;
+      var popup = '<div style="font-family:system-ui;min-width:210px;padding:4px 0">' +
+        '<div style="font-size:13px;font-weight:700;color:#F59E0B;margin-bottom:2px">⭐ Sélection Guide</div>' +
+        '<div style="font-size:14px;font-weight:600;margin-bottom:10px">' + name + '</div>' +
+        '<div style="display:flex;gap:5px;flex-wrap:wrap">' +
+          '<button onclick="openCityMapper(' + lat + ',' + lon + ',\'' + encodeURIComponent(name) + '\')" style="font-size:11px;padding:6px 9px;border-radius:8px;border:none;color:#fff;font-weight:600;background:#007AFF;cursor:pointer">🗺 CityMapper</button>' +
+          '<a href="' + grabUrl + '" style="font-size:11px;padding:6px 9px;border-radius:8px;text-decoration:none;color:#fff;font-weight:600;background:#00B14F;display:inline-block">🚗 Grab</a>' +
+          '<a href="' + gmUrl + '" target="_blank" style="font-size:11px;padding:6px 9px;border-radius:8px;text-decoration:none;color:#fff;font-weight:600;background:#EA4335;display:inline-block">📍 GMaps</a>' +
+        '</div></div>';
+      var m = L.marker([lat,lon], {icon:icon}).addTo(map).bindPopup(popup, {maxWidth:260}).openPopup();
+      setTimeout(function() { map.removeLayer(m); }, 15000);
     }
   }, 300);
 }
