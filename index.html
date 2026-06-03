@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#007AFF">
-<title>🇹🇭 Thaïlande 2026 · v2.3</title>
+<title>🇹🇭 Thaïlande 2026 · v2.7</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"/>
@@ -1591,7 +1591,7 @@ var currentTab = 'itinerary';
 
 /* ─── CLOCK ─── */
 /* ─── DÉTECTION NOUVELLE VERSION ─── */
-var APP_VERSION = '2.3';
+var APP_VERSION = '2.7';
 function checkForUpdate() {
   fetch(window.location.href + '?nocache=' + Date.now(), { cache: 'no-store' })
     .then(function(r) { return r.text(); })
@@ -2421,9 +2421,17 @@ function renderLibreNotes() {
         '<button class="carnet-libre-del" onclick="deleteLibreNote(' + n.id + ')">🗑</button>' +
       '</div>' +
       '<div class="carnet-libre-body">' +
-        '<input type="text" class="carnet-lieu-input" style="margin-bottom:8px" ' +
-          'value="' + (n.lieu||'').replace(/"/g,'&quot;') + '" ' +
-          'oninput="saveLibreField(' + n.id + ',\'lieu\',this.value)" placeholder="📍 Lieu…">' +
+        '<div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">' +
+          '<div style="flex:1;min-width:130px">' +
+            '<div style="font-size:11px;font-weight:600;color:var(--label3);margin-bottom:3px">📅 Date</div>' +
+            '<input type="date" class="carnet-date-input" value="' + (n.date||'') + '" onchange="saveLibreField(' + n.id + ',\'date\',this.value)">' +
+          '</div>' +
+          '<div style="flex:2;min-width:130px">' +
+            '<div style="font-size:11px;font-weight:600;color:var(--label3);margin-bottom:3px">📍 Lieu</div>' +
+            '<input type="text" class="carnet-lieu-input" style="margin-bottom:0" value="' + (n.lieu||'').replace(/"/g,'&quot;') + '" ' +
+              'oninput="saveLibreField(' + n.id + ',\'lieu\',this.value)" placeholder="Où étais-tu ?">' +
+          '</div>' +
+        '</div>' +
         '<textarea class="carnet-textarea" style="margin-top:0" oninput="saveLibreField(' + n.id + ',\'text\',this.value)" placeholder="Tes notes…">' + (n.text||'') + '</textarea>' +
       '</div>' +
     '</div>';
