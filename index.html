@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#007AFF">
-<title>🇹🇭 Thaïlande 2026 · v2.7</title>
+<title>🇹🇭 Thaïlande 2026 · v2.8</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"/>
@@ -1030,6 +1030,17 @@ body{
           <option value="3">$$$ Plaisir</option>
         </select>
       </div>
+      <div class="guide-field"><label>Tags (optionnel)</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px" id="ga-tags-wrap">
+          <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="checkbox" value="local" onchange="updateGaTags()"> Local</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="checkbox" value="insolite" onchange="updateGaTags()"> Insolite</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="checkbox" value="sf" onchange="updateGaTags()"> Street food</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="checkbox" value="famille" onchange="updateGaTags()"> Famille</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="checkbox" value="gastro" onchange="updateGaTags()"> Gastro</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="checkbox" value="resto" onchange="updateGaTags()"> Resto</label>
+        </div>
+        <input type="hidden" id="ga-tags" value="">
+      </div>
       <div class="guide-field"><label>Description</label><textarea id="ga-desc" placeholder="Ce que tu as vu, lu, retenu..."></textarea></div>
       <div class="guide-field"><label>Prix</label><input type="text" id="ga-price" placeholder="Ex: 80-150 bath / 300 bath / gratuit"></div>
       <div class="guide-field"><label>Horaires</label><input type="text" id="ga-open" placeholder="Ex: Lun-Sam 11h-22h"></div>
@@ -1591,7 +1602,7 @@ var currentTab = 'itinerary';
 
 /* ─── CLOCK ─── */
 /* ─── DÉTECTION NOUVELLE VERSION ─── */
-var APP_VERSION = '2.7';
+var APP_VERSION = '2.8';
 function checkForUpdate() {
   fetch(window.location.href + '?nocache=' + Date.now(), { cache: 'no-store' })
     .then(function(r) { return r.text(); })
@@ -2495,6 +2506,17 @@ function buildGuideMarkers(city) {
       });
     });
   });
+  /* Lieux perso avec coords */
+  loadGuidePerso().filter(function(p){ return p.city === city && p.lat && p.lon; }).forEach(function(p) {
+    var typeMap2 = { manger:'food', dormir:'hebergement', voir:'culture' };
+    markers.push({
+      name: p.name, lat: p.lat, lon: p.lon,
+      type: typeMap2[p.cat] || 'culture',
+      emoji: p.cat==='manger'?'🍜':p.cat==='dormir'?'🏠':'👁',
+      desc: (p.desc||'').substring(0,80)+'…',
+      isGuide: true, isPerso: true, tip: p.tip, price: p.price
+    });
+  });
   return markers;
 }
 
@@ -2786,6 +2808,7 @@ function openIA(url, name) {
   /* Modale ville + jours */
   var modal = document.createElement('div');
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.className = 'visited-modal';
   modal.innerHTML =
     '<div style="background:var(--card);border-radius:16px;padding:20px;width:100%;max-width:340px;box-shadow:0 8px 32px rgba(0,0,0,.3)">' +
       '<div style="font-size:16px;font-weight:700;color:var(--label);margin-bottom:14px">🗺 Précise le contexte</div>' +
@@ -2798,7 +2821,7 @@ function openIA(url, name) {
       '<div style="font-size:12px;font-weight:600;color:var(--label2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Nombre de jours dans cette ville</div>' +
       '<input id="ia-jours" type="number" min="1" max="20" placeholder="ex: 4" style="width:100%;font-size:16px;padding:8px 12px;border:1.5px solid var(--bg4);border-radius:10px;background:var(--bg);color:var(--label);outline:none;font-family:\'Inter\',sans-serif;margin-bottom:14px">' +
       '<div style="display:flex;gap:8px">' +
-        '<button onclick="this.closest(\'div[style*=inset]\').remove()" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--sep-color);background:none;color:var(--label2);font-size:14px;cursor:pointer;font-family:\'Inter\',sans-serif">Annuler</button>' +
+    + '<button onclick="document.querySelector(\'.visited-modal\').remove()" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--sep-color);background:none;color:var(--label2);font-size:14px;cursor:pointer;font-family:Inter,sans-serif">Annuler</button>'
         '<button onclick="confirmIA(\'' + url + '\',\'' + name + '\')" style="flex:1;padding:10px;border-radius:10px;border:none;background:var(--blue);color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:\'Inter\',sans-serif">Copier & Ouvrir</button>' +
       '</div>' +
     '</div>';
@@ -2869,10 +2892,18 @@ function saveGuidePerso(arr) { try { localStorage.setItem(GUIDE_PERSO_KEY, JSON.
 function loadGuideVisited() { try { return JSON.parse(localStorage.getItem(GUIDE_VISITED_KEY)) || {}; } catch(e) { return {}; } }
 function saveGuideVisited(obj) { try { localStorage.setItem(GUIDE_VISITED_KEY, JSON.stringify(obj)); } catch(e) {} }
 
+function updateGaTags() {
+  var tags = [];
+  document.querySelectorAll('#ga-tags-wrap input[type=checkbox]:checked').forEach(function(cb){ tags.push(cb.value); });
+  var el = document.getElementById('ga-tags'); if(el) el.value = tags.join(',');
+}
+
 function toggleGuideAddForm() {
   var form = document.getElementById('guide-add-form');
   if (form) form.classList.toggle('open');
   ['ga-name','ga-url','ga-desc','ga-price','ga-open','ga-tip','ga-addr'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  document.querySelectorAll('#ga-tags-wrap input[type=checkbox]').forEach(function(cb){ cb.checked=false; });
+  var gt = document.getElementById('ga-tags'); if(gt) gt.value='';
   var hidTitle = document.getElementById('guide-add-title'); if(hidTitle) hidTitle.textContent = 'Ajouter un lieu';
   var hidId = document.getElementById('ga-edit-id'); if(hidId) hidId.value = '';
   var st = document.getElementById('ga-status'); if(st) st.textContent='';
@@ -2905,6 +2936,7 @@ function saveGuideItemManual() {
   var open   = (document.getElementById('ga-open')||{}).value||'--';
   var tip    = (document.getElementById('ga-tip')||{}).value||'';
   var addr   = (document.getElementById('ga-addr')||{}).value||'';
+  var tags   = ((document.getElementById('ga-tags')||{}).value||'').split(',').filter(Boolean);
   var budget = parseInt((document.getElementById('ga-budget')||{}).value||'1');
   var city   = getGaCity(); var cityLabel = getGaCityLabel();
   var cat    = (document.getElementById('ga-cat')||{}).value||'manger';
@@ -2916,7 +2948,7 @@ function saveGuideItemManual() {
       desc: desc || 'Lieu ajouté manuellement.',
       price: price, open: open,
       tip: tip + (url ? (tip ? ' — ' : '') + 'Source : ' + url.replace('https://','').split('/')[0] : ''),
-      tags: [], budget: budget,
+      tags: tags, budget: budget,
       web: url, reviews: url ? [url] : [],
       perso: true, enriched: false
     };
@@ -2965,6 +2997,8 @@ function editGuidePerso(item) {
   set('ga-url', item.web||'');
   set('ga-budget', item.budget||1);
   set('ga-edit-id', item.id);
+  document.querySelectorAll('#ga-tags-wrap input[type=checkbox]').forEach(function(cb){ cb.checked=(item.tags||[]).indexOf(cb.value)>=0; });
+  var gt=document.getElementById('ga-tags'); if(gt) gt.value=(item.tags||[]).join(',');
   var citySel = document.getElementById('ga-city');
   if (citySel) { citySel.value = item.city; document.getElementById('ga-city-autre-wrap').style.display = item.city==='autre'?'':'none'; }
   var catSel = document.getElementById('ga-cat');
@@ -2986,6 +3020,8 @@ function isVisited(item) {
   return !!visited[key];
 }
 
+function closeVisitedModal(){ var m=document.querySelector('.visited-modal'); if(m) m.remove(); }
+
 function markVisited(item) {
   var visited = loadGuideVisited();
   var key = item.perso ? 'p_'+item.id : 'g_'+item.name;
@@ -2995,27 +3031,58 @@ function markVisited(item) {
     showGuideDetailFull(item);
     return;
   }
-  visited[key] = { date: new Date().toLocaleDateString('fr-FR'), name: item.name };
+  /* Popup de choix de date */
+  var today = new Date().toISOString().split('T')[0];
+  var modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.className = 'visited-modal';
+  modal.innerHTML = '<div style="background:var(--card);border-radius:16px;padding:20px;width:100%;max-width:320px;box-shadow:0 8px 32px rgba(0,0,0,.3)">'
+    + '<div style="font-size:16px;font-weight:700;color:var(--label);margin-bottom:6px">📍 ' + item.name + '</div>'
+    + '<div style="font-size:13px;color:var(--label2);margin-bottom:14px">Quand y es-tu allé ?</div>'
+    + '<input type="date" id="visited-date-input" value="' + today + '" style="width:100%;font-size:15px;font-family:Inter,sans-serif;padding:8px 12px;border:1.5px solid var(--bg4);border-radius:10px;background:var(--bg);color:var(--label);outline:none;margin-bottom:14px">'
+    + '<div style="display:flex;gap:8px">'
+    + '<button onclick="closeVisitedModal()" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--sep-color);background:none;color:var(--label2);font-size:14px;cursor:pointer;font-family:Inter,sans-serif">Annuler</button>'
+    + '<button onclick="confirmVisited(currentGuideItem)" style="flex:1;padding:10px;border-radius:10px;border:none;background:var(--green);color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">Confirmer</button>'
+    + '</div></div>';
+  document.body.appendChild(modal);
+}
+
+function confirmVisited(item) {
+  var dateInput = document.getElementById('visited-date-input');
+  var chosenDate = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
+  var modal = document.querySelector('div[style*="inset:0"]');
+  if (modal) modal.remove();
+  var visited = loadGuideVisited();
+  var key = item.perso ? 'p_'+item.id : 'g_'+item.name;
+  var dateDisplay = chosenDate ? new Date(chosenDate+'T12:00:00').toLocaleDateString('fr-FR') : new Date().toLocaleDateString('fr-FR');
+  visited[key] = { date: dateDisplay, isoDate: chosenDate, name: item.name };
   saveGuideVisited(visited);
-  /* Ajouter dans le carnet */
-  var now = new Date();
-  var dayN = Math.floor((now - DEPART) / 86400000) + 1;
   var noteText = '📍 ' + item.name + (item.cityLabel ? ' (' + item.cityLabel + ')' : '') +
     (item.desc ? ' — ' + item.desc.substring(0, 80) + '…' : '');
-  if (dayN >= 1 && dayN <= 27) {
-    /* Pendant le voyage : note dans le jour en cours */
+  /* Trouver le jour correspondant à la date choisie */
+  var DAY_DATES = {
+    1:'2026-07-24',2:'2026-07-25',3:'2026-07-26',4:'2026-07-27',
+    5:'2026-07-28',6:'2026-07-29',7:'2026-07-30',8:'2026-07-31',
+    9:'2026-08-01',10:'2026-08-02',11:'2026-08-03',12:'2026-08-04',
+    13:'2026-08-05',14:'2026-08-06',15:'2026-08-07',16:'2026-08-08',
+    17:'2026-08-09',18:'2026-08-10',19:'2026-08-11',20:'2026-08-12',
+    21:'2026-08-13',22:'2026-08-14',23:'2026-08-15',24:'2026-08-16',
+    25:'2026-08-17',26:'2026-08-18',27:'2026-08-19'
+  };
+  var matchDay = null;
+  Object.keys(DAY_DATES).forEach(function(d){ if(DAY_DATES[d]===chosenDate) matchDay=parseInt(d); });
+  if (matchDay) {
     var notes = loadNotes();
-    var noteKey = 'day_' + dayN;
+    var noteKey = 'day_' + matchDay;
     var existing = getNoteText(notes[noteKey]);
     var lieu = getNoteLieu(notes[noteKey], item.cityLabel || item.name);
-    saveNoteObj(noteKey, existing + (existing ? '\n' : '') + noteText, lieu || item.cityLabel || '');
-    alert('✅ Ajouté au carnet — Jour ' + dayN + ' !');
+    saveNoteObjFull(noteKey, existing + (existing ? '\n' : '') + noteText, lieu || item.cityLabel || '', chosenDate);
+    alert('✅ Ajouté au carnet — Jour ' + matchDay + ' (' + dateDisplay + ') !');
   } else {
-    /* Avant ou après le voyage : note libre */
     var libre = loadLibre();
-    libre.push({ id: Date.now(), title: item.name, lieu: item.cityLabel || '', text: noteText });
+    libre.push({ id: Date.now(), title: item.name, lieu: item.cityLabel || '', text: noteText, date: chosenDate });
     saveLibre(libre);
-    alert('✅ Ajouté aux notes libres du carnet !');
+    alert('✅ Ajouté aux notes libres du carnet (' + dateDisplay + ') !');
   }
   showGuideDetailFull(item);
 }
@@ -3050,7 +3117,7 @@ function showGuideDetailFull(item) {
     reviewsHtml +
     "<div class='detail-section'>Y aller</div><div class='nav-btns'>" +
     (item.web ? "<a href='"+item.web+"' target='_blank' class='nav-btn' style='background:#6D28D9'>Site</a>" : '') +
-    (cmDeep ? "<a href='"+cmDeep+"' class='nav-btn' style='background:#007AFF'>CityMapper</a>" : '') +
+    (cmDeep ? "<a href='"+cmDeep+"' onclick=\"cmFallback('https://citymapper.com/directions?endcoord="+item.lat+","+item.lon+"&endname="+encodeURIComponent(item.name)+"')\" class='nav-btn' style='background:#007AFF'>🗺 CityMapper</a>" : '') +
     "<a href='grab://open?screenType=BOOKING&destCoord="+item.lat+","+item.lon+"&destName="+encodeURIComponent(item.name)+"' class='nav-btn' style='background:#00B14F'>Grab</a>" +
     "<a href='"+gmUrl+"' target='_blank' class='nav-btn' style='background:#EA4335'>GMaps</a>" +
     (item.lat ? "<button onclick='showOnAppMap("+item.lat+","+item.lon+",\'"+(item.name||'').replace(/'/g,"")+"\')' class='nav-btn' style='background:var(--blue)'>Carte</button>" : '') +
@@ -3371,4 +3438,4 @@ if (window.speechSynthesis) {
 }
 </script>
 </body>
-</html>
+    + '<button onclick="closeVisitedModal()" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--sep-color);background:none;color:var(--label2);font-size:14px;cursor:pointer;font-family:Inter,sans-serif">Annuler</button>'
