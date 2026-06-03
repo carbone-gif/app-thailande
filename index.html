@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#007AFF">
-<title>🇹🇭 Thaïlande 2026 · v2.8</title>
+<title>🇹🇭 Thaïlande 2026 · v2.9</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"/>
@@ -475,13 +475,14 @@ body{
 .gb3{background:rgba(255,59,48,.12);color:var(--red)}
 @media(prefers-color-scheme:dark){.gb1{color:var(--green)}.gb2{color:var(--orange)}}
 .guide-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
-.gtag{font-size:10px;font-weight:600;padding:2px 7px;border-radius:99px;border:0.5px solid var(--sep-color)}
+.gtag{font-size:9px;font-weight:600;padding:2px 6px;border-radius:99px;border:0.5px solid var(--sep-color);white-space:nowrap;}
 .gtag-local{background:rgba(0,122,255,.08);color:var(--blue)}
 .gtag-insolite{background:rgba(175,82,222,.1);color:var(--purple)}
 .gtag-sf{background:rgba(255,149,0,.1);color:#C25A00}
 .gtag-gastro{background:rgba(255,59,48,.1);color:var(--red)}
 .gtag-famille{background:rgba(52,199,89,.1);color:#248A3D}
 .gtag-resto{background:rgba(90,200,250,.15);color:#0071A4}
+.gtag-monchoix{background:rgba(255,200,0,.2);color:#996600}
 @media(prefers-color-scheme:dark){.gtag-sf{color:var(--orange)}.gtag-famille{color:var(--green)}.gtag-resto{color:var(--teal)}.gtag-insolite{color:var(--purple)}}
 .guide-desc-short{font-size:13px;color:var(--label2);line-height:1.5;margin-bottom:6px}
 .guide-price-tag{font-size:12px;color:var(--label2);margin-bottom:4px}
@@ -859,6 +860,7 @@ body{
       <button class="fpill" data-city="chiangmai">🌿 Chiang Mai</button>
       <button class="fpill" data-city="kohchang">🏝️ Koh Chang</button>
       <button class="fpill" id="geolocate-btn" onclick="locateMe()">📍 Ma position</button>
+      <button class="fpill" id="lieux-btn" onclick="toggleLieuxPanel()">📋 Mes lieux</button>
     </div>
     <div class="filter-row" id="type-filter">
       <button class="fpill active" data-type="all">Tous</button>
@@ -873,6 +875,10 @@ body{
     </div>
   </div>
   <div id="leaflet-map"></div>
+  <div id="lieux-panel" style="display:none;background:var(--card);border-radius:var(--rad-lg);padding:12px;margin-top:8px;box-shadow:var(--sh);max-height:220px;overflow-y:auto">
+    <div style="font-size:12px;font-weight:600;color:var(--label2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Mes lieux — clic pour localiser</div>
+    <div id="lieux-panel-list"></div>
+  </div>
 </div>
 
 <!-- ─── MÉTÉO ─── -->
@@ -1032,6 +1038,7 @@ body{
       </div>
       <div class="guide-field"><label>Tags (optionnel)</label>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px" id="ga-tags-wrap">
+          <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="checkbox" value="monchoix" onchange="updateGaTags()"> ⭐ Mon choix</label>
           <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="checkbox" value="local" onchange="updateGaTags()"> Local</label>
           <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="checkbox" value="insolite" onchange="updateGaTags()"> Insolite</label>
           <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="checkbox" value="sf" onchange="updateGaTags()"> Street food</label>
@@ -1602,7 +1609,7 @@ var currentTab = 'itinerary';
 
 /* ─── CLOCK ─── */
 /* ─── DÉTECTION NOUVELLE VERSION ─── */
-var APP_VERSION = '2.8';
+var APP_VERSION = '2.9';
 function checkForUpdate() {
   fetch(window.location.href + '?nocache=' + Date.now(), { cache: 'no-store' })
     .then(function(r) { return r.text(); })
@@ -2507,14 +2514,20 @@ function buildGuideMarkers(city) {
     });
   });
   /* Lieux perso avec coords */
-  loadGuidePerso().filter(function(p){ return p.city === city && p.lat && p.lon; }).forEach(function(p) {
+  loadGuidePerso().filter(function(p){ return p.city === city; }).forEach(function(p) {
+    /* Si pas de coords, centrer sur la ville */
+    var cityCenter = { bangkok:[13.7563,100.5018], chiangmai:[18.7883,98.9853], kohchang:[12.0508,102.3191] };
+    var center = cityCenter[city] || [13.7563,100.5018];
+    var plat = (p.lat && p.lon) ? p.lat : center[0];
+    var plon = (p.lat && p.lon) ? p.lon : center[1];
     var typeMap2 = { manger:'food', dormir:'hebergement', voir:'culture' };
     markers.push({
-      name: p.name, lat: p.lat, lon: p.lon,
+      name: p.name, lat: plat, lon: plon,
       type: typeMap2[p.cat] || 'culture',
       emoji: p.cat==='manger'?'🍜':p.cat==='dormir'?'🏠':'👁',
       desc: (p.desc||'').substring(0,80)+'…',
-      isGuide: true, isPerso: true, tip: p.tip, price: p.price
+      isGuide: true, isPerso: true, noCoords: !(p.lat && p.lon),
+      tip: p.tip, price: p.price
     });
   });
   return markers;
@@ -2559,6 +2572,46 @@ function renderMapMarkers() {
     L.marker([m.lat, m.lon], { icon:icon }).addTo(markerLayer).bindPopup(popup, { maxWidth:260 });
   });
 }
+function switchToIA() {
+  map.closePopup();
+  var topBtns = document.querySelectorAll('.top-nav button');
+  var found = null;
+  topBtns.forEach(function(b){ if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'claude'")) found=b; });
+  switchTab('claude', found);
+}
+
+function toggleLieuxPanel() {
+  var panel = document.getElementById('lieux-panel');
+  if (!panel) return;
+  var open = panel.style.display !== 'none';
+  panel.style.display = open ? 'none' : 'block';
+  if (!open) renderLieuxPanel();
+}
+
+function renderLieuxPanel() {
+  var el = document.getElementById('lieux-panel-list'); if (!el) return;
+  var guideList = buildGuideMarkers(mapCity);
+  if (!guideList.length) { el.innerHTML = '<div style="font-size:13px;color:var(--label2);text-align:center;padding:8px">Aucun lieu dans cette ville</div>'; return; }
+  el.innerHTML = guideList.map(function(m) {
+    return '<div onclick="zoomToMarker('+m.lat+','+m.lon+',\''+m.name.replace(/'/g,'')+'\')" style="display:flex;align-items:center;gap:8px;padding:8px 4px;border-bottom:0.5px solid var(--sep-color);cursor:pointer">' +
+      '<span style="font-size:16px">'+m.emoji+'</span>' +
+      '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;color:var(--label);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+m.name+'</div>' +
+      (m.isPerso ? '<span style="font-size:10px;color:var(--blue)">✏️ Mon lieu</span>' : '<span style="font-size:10px;color:var(--label3)">⭐ Guide</span>') +
+      '</div></div>';
+  }).join('');
+}
+
+function zoomToMarker(lat, lon, name) {
+  document.getElementById('lieux-panel').style.display = 'none';
+  map.setView([lat, lon], 16);
+  /* Trouver le marker et ouvrir son popup */
+  markerLayer.eachLayer(function(layer) {
+    if (layer.getLatLng && Math.abs(layer.getLatLng().lat - lat) < 0.0001 && Math.abs(layer.getLatLng().lng - lon) < 0.0001) {
+      layer.openPopup();
+    }
+  });
+}
+
 function askMapIA(name) {
   map.closePopup();
   var inp = document.getElementById('claude-input');
@@ -2598,7 +2651,7 @@ function locateMe() {
         html:'<div style="width:14px;height:14px;border-radius:50%;background:#007AFF;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4)"></div>'
       });
       userMarker = L.marker([lat,lon], {icon:icon}).addTo(map)
-        .bindPopup('<div style="font-family:system-ui;padding:3px 0"><div style="font-size:13px;font-weight:600;margin-bottom:3px">📍 Vous êtes ici</div><div style="font-size:11px;color:#888">Précision : ±' + Math.round(acc) + ' m</div></div>', {maxWidth:200})
+        .bindPopup('<div style="font-family:system-ui;padding:6px 0;min-width:180px"><div style="font-size:13px;font-weight:600;margin-bottom:3px">📍 Vous êtes ici</div><div style="font-size:11px;color:#888;margin-bottom:8px">Précision : ±' + Math.round(acc) + ' m</div><button onclick="switchToIA()" style="font-size:11px;padding:6px 10px;border-radius:8px;border:none;color:#fff;font-weight:600;background:#7c3aed;cursor:pointer;width:100%">🤖 Demander à l\'IA</button></div>', {maxWidth:220})
         .openPopup();
       map.setView([lat,lon], 15);
       btn.textContent = '✅ Localisé'; btn.disabled = false;
@@ -3020,6 +3073,14 @@ function isVisited(item) {
   return !!visited[key];
 }
 
+function showToast(msg) {
+  var t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);color:#fff;padding:10px 18px;border-radius:10px;font-size:13px;font-family:Inter,sans-serif;z-index:9999;white-space:nowrap;pointer-events:none;';
+  document.body.appendChild(t);
+  setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity .4s'; setTimeout(function(){ t.remove(); }, 400); }, 2500);
+}
+
 function closeVisitedModal(){ var m=document.querySelector('.visited-modal'); if(m) m.remove(); }
 
 function markVisited(item) {
@@ -3077,12 +3138,12 @@ function confirmVisited(item) {
     var existing = getNoteText(notes[noteKey]);
     var lieu = getNoteLieu(notes[noteKey], item.cityLabel || item.name);
     saveNoteObjFull(noteKey, existing + (existing ? '\n' : '') + noteText, lieu || item.cityLabel || '', chosenDate);
-    alert('✅ Ajouté au carnet — Jour ' + matchDay + ' (' + dateDisplay + ') !');
+    showToast('✅ Ajouté au carnet — Jour ' + matchDay + ' (' + dateDisplay + ')');
   } else {
     var libre = loadLibre();
     libre.push({ id: Date.now(), title: item.name, lieu: item.cityLabel || '', text: noteText, date: chosenDate });
     saveLibre(libre);
-    alert('✅ Ajouté aux notes libres du carnet (' + dateDisplay + ') !');
+    showToast('✅ Ajouté aux notes libres du carnet (' + dateDisplay + ')');
   }
   showGuideDetailFull(item);
 }
@@ -3094,8 +3155,8 @@ function showGuideDetailIdx(idx) {
 
 function showGuideDetailFull(item) {
   var bLabel = ["","$","$$","$$$"], bClass = ["","gb1","gb2","gb3"];
-  var tagLabels = { local:"Local", insolite:"Insolite", sf:"Street food", gastro:"Gastronomique", famille:"Famille", resto:"Resto" };
-  var tagClass = { local:"gtag-local", insolite:"gtag-insolite", sf:"gtag-sf", gastro:"gtag-gastro", famille:"gtag-famille", resto:"gtag-resto" };
+  var tagLabels = { monchoix:"⭐ Mon choix", local:"Local", insolite:"Insolite", sf:"Street food", gastro:"Gastro", famille:"Famille", resto:"Resto" };
+  var tagClass = { monchoix:"gtag-monchoix", local:"gtag-local", insolite:"gtag-insolite", sf:"gtag-sf", gastro:"gtag-gastro", famille:"gtag-famille", resto:"gtag-resto" };
   var tagsHtml = (item.tags||[]).map(function(t){ return "<span class='gtag "+(tagClass[t]||"")+"'>"+(tagLabels[t]||t)+"</span>"; }).join('');
   var reviewsHtml = '';
   if (item.reviews && item.reviews.length) {
@@ -3103,7 +3164,10 @@ function showGuideDetailFull(item) {
       item.reviews.map(function(u){ return "<a href='"+u+"' target='_blank' class='detail-link'>source</a>"; }).join('');
   }
   var gmUrl = item.lat ? "https://www.google.com/maps/search/?api=1&query="+item.lat+","+item.lon : "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(item.name);
-  var cmDeep = item.lat ? "citymapper://directions?endcoord="+item.lat+","+item.lon+"&endname="+encodeURIComponent(item.name) : '';
+  var cmLat = item.lat || 0; var cmLon = item.lon || 0;
+  var cmQuery = encodeURIComponent(item.name);
+  var cmDeep = cmLat ? "citymapper://directions?endcoord="+cmLat+","+cmLon+"&endname="+cmQuery : "citymapper://search?search_query="+cmQuery;
+  var cmWeb = cmLat ? 'https://citymapper.com/directions?endcoord='+cmLat+','+cmLon+'&endname='+cmQuery : 'https://citymapper.com/search?search_query='+cmQuery;
   var visited = isVisited(item);
   window.currentGuideItem = item;
   var html = "<button class='back-btn' onclick='closeGuideDetail()'>Retour</button>";
@@ -3117,7 +3181,7 @@ function showGuideDetailFull(item) {
     reviewsHtml +
     "<div class='detail-section'>Y aller</div><div class='nav-btns'>" +
     (item.web ? "<a href='"+item.web+"' target='_blank' class='nav-btn' style='background:#6D28D9'>Site</a>" : '') +
-    (cmDeep ? "<a href='"+cmDeep+"' onclick=\"cmFallback('https://citymapper.com/directions?endcoord="+item.lat+","+item.lon+"&endname="+encodeURIComponent(item.name)+"')\" class='nav-btn' style='background:#007AFF'>🗺 CityMapper</a>" : '') +
+    "<a href='"+cmDeep+"' onclick=\"cmFallback('"+cmWeb+"')\" class='nav-btn' style='background:#007AFF'>🗺 CityMapper</a>" +
     "<a href='grab://open?screenType=BOOKING&destCoord="+item.lat+","+item.lon+"&destName="+encodeURIComponent(item.name)+"' class='nav-btn' style='background:#00B14F'>Grab</a>" +
     "<a href='"+gmUrl+"' target='_blank' class='nav-btn' style='background:#EA4335'>GMaps</a>" +
     (item.lat ? "<button onclick='showOnAppMap("+item.lat+","+item.lon+",\'"+(item.name||'').replace(/'/g,"")+"\')' class='nav-btn' style='background:var(--blue)'>Carte</button>" : '') +
@@ -3157,7 +3221,7 @@ function renderGuide() {
     var vKey = isPerso ? "p_"+item.id : "g_"+item.name;
     var isVis = !!visited[vKey];
     var tagLabels = { local:"Local", insolite:"Insolite", sf:"Street food", gastro:"Gastro", famille:"Famille", resto:"Resto" };
-    var tagClass = { local:"gtag-local", insolite:"gtag-insolite", sf:"gtag-sf", gastro:"gtag-gastro", famille:"gtag-famille", resto:"gtag-resto" };
+    var tagClass = { monchoix:"gtag-monchoix", local:"gtag-local", insolite:"gtag-insolite", sf:"gtag-sf", gastro:"gtag-gastro", famille:"gtag-famille", resto:"gtag-resto" };
     var tagsHtml = (item.tags||[]).map(function(t){ return "<span class='gtag "+(tagClass[t]||"")+"'>"+(tagLabels[t]||t)+"</span>"; }).join("");
     return "<div class='guide-card"+(isPerso?" perso":"")+(isVis?" visited-card":"")+"' onclick='showGuideDetailIdx("+idx+")'>" +
       "<div class='guide-card-header'><div class='guide-name'>"+item.name+(isPerso?" [+]":"")+"</div>"+
@@ -3173,7 +3237,7 @@ function showGuideDetail(idx) {
   var item = window._guideItems[idx]; if (!item) return;
   var bLabel = ["","$","$$","$$$"], bClass = ["","gb1","gb2","gb3"];
   var tagLabels = { local:"🏠 Local", insolite:"✨ Insolite", sf:"🍢 Street food", gastro:"⭐ Gastronomique", famille:"👨‍👩‍👧 Famille", resto:"🍽 Resto" };
-  var tagClass = { local:"gtag-local", insolite:"gtag-insolite", sf:"gtag-sf", gastro:"gtag-gastro", famille:"gtag-famille", resto:"gtag-resto" };
+  var tagClass = { monchoix:"gtag-monchoix", local:"gtag-local", insolite:"gtag-insolite", sf:"gtag-sf", gastro:"gtag-gastro", famille:"gtag-famille", resto:"gtag-resto" };
   var tagsHtml = (item.tags||[]).map(function(t) { return "<span class='gtag " + (tagClass[t]||"") + "'>" + (tagLabels[t]||t) + "</span>"; }).join("");
   var reviewsHtml = "";
   if (item.reviews && item.reviews.length) {
