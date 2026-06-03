@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#007AFF">
-<title>🇹🇭 Thaïlande 2026 · v2.9</title>
+<title>🇹🇭 Thaïlande 2026 · v3.0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"/>
@@ -1609,7 +1609,7 @@ var currentTab = 'itinerary';
 
 /* ─── CLOCK ─── */
 /* ─── DÉTECTION NOUVELLE VERSION ─── */
-var APP_VERSION = '2.9';
+var APP_VERSION = '3.0';
 function checkForUpdate() {
   fetch(window.location.href + '?nocache=' + Date.now(), { cache: 'no-store' })
     .then(function(r) { return r.text(); })
@@ -2549,9 +2549,9 @@ function renderMapMarkers() {
   list.forEach(function(m) {
     var isGuide = !!m.isGuide;
     var iconHtml = isGuide
-      ? '<div style="position:relative;width:28px;height:28px">'
-        + '<div style="font-size:22px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))">' + m.emoji + '</div>'
-        + '<div style="position:absolute;top:-4px;right:-4px;font-size:11px;line-height:1">⭐</div>'
+      ? '<div style="position:relative;display:flex;flex-direction:column;align-items:center">'
+        + '<div style="font-size:'+(m.isPerso?'26':'22')+'px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))">' + m.emoji + '</div>'
+        + '<div style="position:absolute;top:-5px;right:-5px;font-size:10px;line-height:1">'+(m.isPerso?'✏️':'⭐')+'</div>'
         + '</div>'
       : '<div style="font-size:22px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))">' + m.emoji + '</div>';
     var icon = L.divIcon({ className:'', iconSize:[28,28], iconAnchor:[14,14], html: iconHtml });
@@ -2585,7 +2585,7 @@ function toggleLieuxPanel() {
   if (!panel) return;
   var open = panel.style.display !== 'none';
   panel.style.display = open ? 'none' : 'block';
-  if (!open) renderLieuxPanel();
+  if (!open) { renderLieuxPanel(); panel.scrollIntoView({behavior:'smooth',block:'nearest'}); }
 }
 
 function renderLieuxPanel() {
@@ -2861,7 +2861,7 @@ function openIA(url, name) {
   /* Modale ville + jours */
   var modal = document.createElement('div');
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
-  modal.className = 'visited-modal';
+  modal.className = 'ia-modal';
   modal.innerHTML =
     '<div style="background:var(--card);border-radius:16px;padding:20px;width:100%;max-width:340px;box-shadow:0 8px 32px rgba(0,0,0,.3)">' +
       '<div style="font-size:16px;font-weight:700;color:var(--label);margin-bottom:14px">🗺 Précise le contexte</div>' +
@@ -2874,13 +2874,14 @@ function openIA(url, name) {
       '<div style="font-size:12px;font-weight:600;color:var(--label2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Nombre de jours dans cette ville</div>' +
       '<input id="ia-jours" type="number" min="1" max="20" placeholder="ex: 4" style="width:100%;font-size:16px;padding:8px 12px;border:1.5px solid var(--bg4);border-radius:10px;background:var(--bg);color:var(--label);outline:none;font-family:\'Inter\',sans-serif;margin-bottom:14px">' +
       '<div style="display:flex;gap:8px">' +
-    + '<button onclick="document.querySelector(\'.visited-modal\').remove()" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--sep-color);background:none;color:var(--label2);font-size:14px;cursor:pointer;font-family:Inter,sans-serif">Annuler</button>'
+    + '<button onclick="closeIAModal()" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--sep-color);background:none;color:var(--label2);font-size:14px;cursor:pointer;font-family:Inter,sans-serif">Annuler</button>'
         '<button onclick="confirmIA(\'' + url + '\',\'' + name + '\')" style="flex:1;padding:10px;border-radius:10px;border:none;background:var(--blue);color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:\'Inter\',sans-serif">Copier & Ouvrir</button>' +
       '</div>' +
     '</div>';
   document.body.appendChild(modal);
   window._iaUrl = url; window._iaName = name; window._iaQuestion = question; window._iaVille = '';
 }
+function closeIAModal(){ var m=document.querySelector('.ia-modal'); if(m) m.remove(); }
 function selectVille(btn, ville) {
   btn.closest('div').querySelectorAll('button').forEach(function(b){ b.style.background='var(--bg3)'; b.style.borderColor='var(--bg4)'; b.style.color='var(--label)'; });
   btn.style.background='var(--blue)'; btn.style.borderColor='var(--blue)'; btn.style.color='#fff';
@@ -2916,7 +2917,7 @@ function confirmIA(url, name) {
     "MA QUESTION : " + question
   ].filter(Boolean).join("\n");
   /* Fermer la modale */
-  var modal = document.querySelector('div[style*="inset:0"]');
+  var modal = document.querySelector('.ia-modal');
   if (modal) modal.remove();
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(context).then(showClaudeFeedback).catch(function() { fallbackCopy(context); });
@@ -3111,8 +3112,7 @@ function markVisited(item) {
 function confirmVisited(item) {
   var dateInput = document.getElementById('visited-date-input');
   var chosenDate = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
-  var modal = document.querySelector('div[style*="inset:0"]');
-  if (modal) modal.remove();
+  document.querySelectorAll('.visited-modal').forEach(function(m){ m.remove(); });
   var visited = loadGuideVisited();
   var key = item.perso ? 'p_'+item.id : 'g_'+item.name;
   var dateDisplay = chosenDate ? new Date(chosenDate+'T12:00:00').toLocaleDateString('fr-FR') : new Date().toLocaleDateString('fr-FR');
@@ -3166,8 +3166,8 @@ function showGuideDetailFull(item) {
   var gmUrl = item.lat ? "https://www.google.com/maps/search/?api=1&query="+item.lat+","+item.lon : "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(item.name);
   var cmLat = item.lat || 0; var cmLon = item.lon || 0;
   var cmQuery = encodeURIComponent(item.name);
-  var cmDeep = cmLat ? "citymapper://directions?endcoord="+cmLat+","+cmLon+"&endname="+cmQuery : "citymapper://search?search_query="+cmQuery;
-  var cmWeb = cmLat ? 'https://citymapper.com/directions?endcoord='+cmLat+','+cmLon+'&endname='+cmQuery : 'https://citymapper.com/search?search_query='+cmQuery;
+  var cmDeep = cmLat ? "citymapper://directions?endcoord="+cmLat+","+cmLon+"&endname="+cmQuery : "";
+  var cmWeb = cmLat ? 'https://citymapper.com/directions?endcoord='+cmLat+','+cmLon+'&endname='+cmQuery : '';
   var visited = isVisited(item);
   window.currentGuideItem = item;
   var html = "<button class='back-btn' onclick='closeGuideDetail()'>Retour</button>";
@@ -3181,7 +3181,7 @@ function showGuideDetailFull(item) {
     reviewsHtml +
     "<div class='detail-section'>Y aller</div><div class='nav-btns'>" +
     (item.web ? "<a href='"+item.web+"' target='_blank' class='nav-btn' style='background:#6D28D9'>Site</a>" : '') +
-    "<a href='"+cmDeep+"' onclick=\"cmFallback('"+cmWeb+"')\" class='nav-btn' style='background:#007AFF'>🗺 CityMapper</a>" +
+    (cmDeep ? "<a href='"+cmDeep+"' onclick=\"cmFallback('"+cmWeb+"')\" class='nav-btn' style='background:#007AFF'>🗺 CityMapper</a>" : "") +
     "<a href='grab://open?screenType=BOOKING&destCoord="+item.lat+","+item.lon+"&destName="+encodeURIComponent(item.name)+"' class='nav-btn' style='background:#00B14F'>Grab</a>" +
     "<a href='"+gmUrl+"' target='_blank' class='nav-btn' style='background:#EA4335'>GMaps</a>" +
     (item.lat ? "<button onclick='showOnAppMap("+item.lat+","+item.lon+",\'"+(item.name||'').replace(/'/g,"")+"\')' class='nav-btn' style='background:var(--blue)'>Carte</button>" : '') +
