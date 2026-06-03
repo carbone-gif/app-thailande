@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#007AFF">
-<title>🇹🇭 Thaïlande 2026 · v3.0</title>
+<title>🇹🇭 Thaïlande 2026 · v3.1</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"/>
@@ -1609,7 +1609,7 @@ var currentTab = 'itinerary';
 
 /* ─── CLOCK ─── */
 /* ─── DÉTECTION NOUVELLE VERSION ─── */
-var APP_VERSION = '3.0';
+var APP_VERSION = '3.1';
 function checkForUpdate() {
   fetch(window.location.href + '?nocache=' + Date.now(), { cache: 'no-store' })
     .then(function(r) { return r.text(); })
@@ -2858,26 +2858,24 @@ function resetChecklist() {
 function openIA(url, name) {
   var question = document.getElementById('claude-input').value.trim();
   if (!question) { document.getElementById('claude-input').focus(); return; }
-  /* Modale ville + jours */
   var modal = document.createElement('div');
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
   modal.className = 'ia-modal';
-  modal.innerHTML =
-    '<div style="background:var(--card);border-radius:16px;padding:20px;width:100%;max-width:340px;box-shadow:0 8px 32px rgba(0,0,0,.3)">' +
-      '<div style="font-size:16px;font-weight:700;color:var(--label);margin-bottom:14px">🗺 Précise le contexte</div>' +
-      '<div style="font-size:12px;font-weight:600;color:var(--label2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Ville concernée</div>' +
-      '<div style="display:flex;gap:6px;margin-bottom:14px">' +
-        '<button onclick="selectVille(this,\'Bangkok\')" style="flex:1;padding:8px;border-radius:10px;border:1.5px solid var(--bg4);background:var(--bg3);color:var(--label);font-size:13px;font-weight:500;cursor:pointer;font-family:\'Inter\',sans-serif">🏙️ Bangkok</button>' +
-        '<button onclick="selectVille(this,\'Chiang Mai\')" style="flex:1;padding:8px;border-radius:10px;border:1.5px solid var(--bg4);background:var(--bg3);color:var(--label);font-size:13px;font-weight:500;cursor:pointer;font-family:\'Inter\',sans-serif">🌿 CM</button>' +
-        '<button onclick="selectVille(this,\'Koh Chang\')" style="flex:1;padding:8px;border-radius:10px;border:1.5px solid var(--bg4);background:var(--bg3);color:var(--label);font-size:13px;font-weight:500;cursor:pointer;font-family:\'Inter\',sans-serif">🏝️ KC</button>' +
-      '</div>' +
-      '<div style="font-size:12px;font-weight:600;color:var(--label2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Nombre de jours dans cette ville</div>' +
-      '<input id="ia-jours" type="number" min="1" max="20" placeholder="ex: 4" style="width:100%;font-size:16px;padding:8px 12px;border:1.5px solid var(--bg4);border-radius:10px;background:var(--bg);color:var(--label);outline:none;font-family:\'Inter\',sans-serif;margin-bottom:14px">' +
-      '<div style="display:flex;gap:8px">' +
-    + '<button onclick="closeIAModal()" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--sep-color);background:none;color:var(--label2);font-size:14px;cursor:pointer;font-family:Inter,sans-serif">Annuler</button>'
-        '<button onclick="confirmIA(\'' + url + '\',\'' + name + '\')" style="flex:1;padding:10px;border-radius:10px;border:none;background:var(--blue);color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:\'Inter\',sans-serif">Copier & Ouvrir</button>' +
-      '</div>' +
-    '</div>';
+  var html = '<div style="background:var(--card);border-radius:16px;padding:20px;width:100%;max-width:340px;box-shadow:0 8px 32px rgba(0,0,0,.3)">';
+  html += '<div style="font-size:16px;font-weight:700;color:var(--label);margin-bottom:14px">Precise le contexte</div>';
+  html += '<div style="font-size:12px;font-weight:600;color:var(--label2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Ville concernee</div>';
+  html += '<div style="display:flex;gap:6px;margin-bottom:14px">';
+  html += '<button onclick="selectVille(this,\'Bangkok\')" style="flex:1;padding:8px;border-radius:10px;border:1.5px solid var(--bg4);background:var(--bg3);color:var(--label);font-size:13px;font-weight:500;cursor:pointer;font-family:Inter,sans-serif">Bangkok</button>';
+  html += '<button onclick="selectVille(this,\'Chiang Mai\')" style="flex:1;padding:8px;border-radius:10px;border:1.5px solid var(--bg4);background:var(--bg3);color:var(--label);font-size:13px;font-weight:500;cursor:pointer;font-family:Inter,sans-serif">CM</button>';
+  html += '<button onclick="selectVille(this,\'Koh Chang\')" style="flex:1;padding:8px;border-radius:10px;border:1.5px solid var(--bg4);background:var(--bg3);color:var(--label);font-size:13px;font-weight:500;cursor:pointer;font-family:Inter,sans-serif">KC</button>';
+  html += '</div>';
+  html += '<div style="font-size:12px;font-weight:600;color:var(--label2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Nombre de jours</div>';
+  html += '<input id="ia-jours" type="number" min="1" max="20" placeholder="ex: 4" style="width:100%;font-size:16px;padding:8px 12px;border:1.5px solid var(--bg4);border-radius:10px;background:var(--bg);color:var(--label);outline:none;font-family:Inter,sans-serif;margin-bottom:14px">';
+  html += '<div style="display:flex;gap:8px">';
+  html += '<button onclick="closeIAModal()" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--sep-color);background:none;color:var(--label2);font-size:14px;cursor:pointer;font-family:Inter,sans-serif">Annuler</button>';
+  html += '<button onclick="confirmIA(\'' + url + '\',\'' + name + '\')" style="flex:1;padding:10px;border-radius:10px;border:none;background:var(--blue);color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">Copier & Ouvrir</button>';
+  html += '</div></div>';
+  modal.innerHTML = html;
   document.body.appendChild(modal);
   window._iaUrl = url; window._iaName = name; window._iaQuestion = question; window._iaVille = '';
 }
@@ -3137,11 +3135,15 @@ function confirmVisited(item) {
     var noteKey = 'day_' + matchDay;
     var existing = getNoteText(notes[noteKey]);
     var lieu = getNoteLieu(notes[noteKey], item.cityLabel || item.name);
-    saveNoteObjFull(noteKey, existing + (existing ? '\n' : '') + noteText, lieu || item.cityLabel || '', chosenDate);
+    /* Éviter les doublons */
+    var noteToAdd = existing.indexOf(item.name) >= 0 ? existing : existing + (existing ? '\n' : '') + noteText;
+    saveNoteObjFull(noteKey, noteToAdd, lieu || item.cityLabel || '', chosenDate);
     showToast('✅ Ajouté au carnet — Jour ' + matchDay + ' (' + dateDisplay + ')');
   } else {
     var libre = loadLibre();
-    libre.push({ id: Date.now(), title: item.name, lieu: item.cityLabel || '', text: noteText, date: chosenDate });
+    /* Vérifier si déjà dans les notes libres */
+    var alreadyInLibre = libre.some(function(n){ return n.title === item.name; });
+    if (!alreadyInLibre) libre.push({ id: Date.now(), title: item.name, lieu: item.cityLabel || '', text: noteText, date: chosenDate });
     saveLibre(libre);
     showToast('✅ Ajouté aux notes libres du carnet (' + dateDisplay + ')');
   }
