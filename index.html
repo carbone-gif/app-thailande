@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#007AFF">
-<title>🇹🇭 Thaïlande 2026 · v3.1</title>
+<title>🇹🇭 Thaïlande 2026 · v3.2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"/>
@@ -474,8 +474,8 @@ body{
 .gb2{background:rgba(255,149,0,.12);color:#C25A00}
 .gb3{background:rgba(255,59,48,.12);color:var(--red)}
 @media(prefers-color-scheme:dark){.gb1{color:var(--green)}.gb2{color:var(--orange)}}
-.guide-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
-.gtag{font-size:9px;font-weight:600;padding:2px 6px;border-radius:99px;border:0.5px solid var(--sep-color);white-space:nowrap;}
+.guide-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;align-items:center}
+.gtag{font-size:10px;font-weight:600;padding:2px 8px;border-radius:99px;border:0.5px solid var(--sep-color);display:inline-block;}
 .gtag-local{background:rgba(0,122,255,.08);color:var(--blue)}
 .gtag-insolite{background:rgba(175,82,222,.1);color:var(--purple)}
 .gtag-sf{background:rgba(255,149,0,.1);color:#C25A00}
@@ -1037,7 +1037,7 @@ body{
         </select>
       </div>
       <div class="guide-field"><label>Tags (optionnel)</label>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px" id="ga-tags-wrap">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;row-gap:10px" id="ga-tags-wrap">
           <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="checkbox" value="monchoix" onchange="updateGaTags()"> ⭐ Mon choix</label>
           <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="checkbox" value="local" onchange="updateGaTags()"> Local</label>
           <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="checkbox" value="insolite" onchange="updateGaTags()"> Insolite</label>
@@ -1609,7 +1609,7 @@ var currentTab = 'itinerary';
 
 /* ─── CLOCK ─── */
 /* ─── DÉTECTION NOUVELLE VERSION ─── */
-var APP_VERSION = '3.1';
+var APP_VERSION = '3.2';
 function checkForUpdate() {
   fetch(window.location.href + '?nocache=' + Date.now(), { cache: 'no-store' })
     .then(function(r) { return r.text(); })
@@ -2302,7 +2302,8 @@ function renderCarnet() {
             '<input type="text" class="carnet-lieu-input" value="'+e.lieu.replace(/"/g,'&quot;')+'" data-day="'+e.day+'" placeholder="Ou etais-tu ?" oninput="autosaveLieu(this)">' +
           '</div>' +
         '</div>' +
-        '<div style="font-size:11px;font-weight:600;color:var(--label3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Notes</div>' +
+        getCarnetVisitedHtml(e.date) +
+        '<div style="font-size:11px;font-weight:600;color:var(--label3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;margin-top:8px">Notes</div>' +
         '<textarea class="carnet-textarea" style="margin-top:0" data-day="'+e.day+'" oninput="autosaveNote(this)" placeholder="Souvenirs, impressions...">'+e.text+'</textarea>' +
         '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">' +
           '<button onclick="deleteNote('+e.day+')" style="font-size:12px;color:var(--red);background:none;border:none;cursor:pointer;font-family:Inter,sans-serif;padding:4px 8px">Supprimer</button>' +
@@ -2316,6 +2317,21 @@ function renderCarnet() {
   refreshCarnetCounter();
   renderLibreNotes();
 }
+function getCarnetVisitedHtml(isoDate) {
+  if (!isoDate) return '';
+  var visited = loadGuideVisited();
+  var lieux = [];
+  Object.keys(visited).forEach(function(key) {
+    var v = visited[key];
+    if (v && v.isoDate === isoDate) lieux.push(v.name);
+  });
+  if (!lieux.length) return '';
+  return '<div style="background:rgba(0,122,255,.06);border-radius:10px;padding:8px 12px;margin-bottom:8px;border-left:3px solid var(--blue)">' +
+    '<div style="font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">📍 Lieux visités</div>' +
+    lieux.map(function(n){ return '<div style="font-size:13px;color:var(--label);padding:2px 0">• '+n+'</div>'; }).join('') +
+  '</div>';
+}
+
 function saveDateCarnet(el) {
   var day = el.dataset.day;
   var notes = loadNotes();
@@ -3277,10 +3293,10 @@ function closeGuideDetail() {
   document.getElementById("guide-main-content").style.display = "";
 }
 function showOnAppMap(lat, lon, name) {
-  var topBtns = document.querySelectorAll('.top-nav button');
-  var found = null;
-  topBtns.forEach(function(b) { if (b.getAttribute('onclick') && b.getAttribute('onclick').includes("'carte'")) found = b; });
-  switchTab("carte", found);
+  /* Basculer sur l'onglet carte */
+  switchTab('carte', document.querySelector('.top-nav button[onclick*="carte"]') || null);
+  /* Mettre à jour la nav bottom */
+  document.querySelectorAll('.bnav-item').forEach(function(b){ b.classList.toggle('active', b.dataset.tab==='carte'); });
   setTimeout(function() {
     if (map) {
       map.setView([lat,lon], 15);
@@ -3504,4 +3520,4 @@ if (window.speechSynthesis) {
 }
 </script>
 </body>
-    + '<button onclick="closeVisitedModal()" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--sep-color);background:none;color:var(--label2);font-size:14px;cursor:pointer;font-family:Inter,sans-serif">Annuler</button>'
+</html>
