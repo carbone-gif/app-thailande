@@ -1003,6 +1003,7 @@ body{
     <div id="guide-dormir-note" class="dormir-note" style="display:none">🛏 Logement uniquement pour Chiang Mai — Bangkok et Koh Chang déjà réservés.</div>
     <button class="guide-add-btn" onclick="toggleGuideAddForm()">➕ Ajouter un lieu</button>
         <div class="guide-add-form" id="guide-add-form">
+      <div id="guide-add-title" style="font-size:15px;font-weight:700;color:var(--blue);margin-bottom:12px">Ajouter un lieu</div>
       <div class="guide-field"><label>Nom du lieu *</label><input type="text" id="ga-name" placeholder="Ex: Cafe de l'Artiste"></div>
       <div class="guide-field"><label>Ville</label>
         <select id="ga-city" onchange="document.getElementById('ga-city-autre-wrap').style.display=this.value==='autre'?'':' none'">
@@ -1031,7 +1032,9 @@ body{
       <div class="guide-field"><label>Prix</label><input type="text" id="ga-price" placeholder="Ex: 80-150 bath / 300 bath / gratuit"></div>
       <div class="guide-field"><label>Horaires</label><input type="text" id="ga-open" placeholder="Ex: Lun-Sam 11h-22h"></div>
       <div class="guide-field"><label>Conseil pratique</label><input type="text" id="ga-tip" placeholder="Ex: Arriver avant 8h pour eviter la queue"></div>
+      <div class="guide-field"><label>Adresse (pour localiser sur la carte)</label><input type="text" id="ga-addr" placeholder="Ex: 22 Nimman Road, Chiang Mai"></div>
       <div class="guide-field"><label>URL source (optionnel)</label><input type="url" id="ga-url" placeholder="https://routard.com/..."></div>
+      <input type="hidden" id="ga-edit-id" value="">
       <div class="guide-enrich-status" id="ga-status"></div>
       <div style="display:flex;gap:8px;margin-top:8px">
         <button onclick="toggleGuideAddForm()" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--sep-color);background:none;color:var(--label2);font-size:14px;cursor:pointer;font-family:'Inter',sans-serif;">Annuler</button>
@@ -2466,10 +2469,21 @@ function renderMapMarkers() {
       + '<button onclick="openCityMapper(' + m.lat + ',' + m.lon + ',\'' + encodeURIComponent(m.name) + '\')" style="font-size:11px;padding:6px 9px;border-radius:8px;border:none;color:#fff;font-weight:600;background:#007AFF;cursor:pointer">🗺 CityMapper</button>'
       + '<a href="' + grabUrl + '" style="font-size:11px;padding:6px 9px;border-radius:8px;text-decoration:none;color:#fff;font-weight:600;background:#00B14F;display:inline-block">🚗 Grab</a>'
       + '<a href="' + gmUrl + '" target="_blank" style="font-size:11px;padding:6px 9px;border-radius:8px;text-decoration:none;color:#fff;font-weight:600;background:#EA4335;display:inline-block">📍 GMaps</a>'
+      + '<button onclick="askMapIA(\'' + m.name.replace(/'/g,'') + '\')" style="font-size:11px;padding:6px 9px;border-radius:8px;border:none;color:#fff;font-weight:600;background:#7c3aed;cursor:pointer;margin-top:6px;width:100%">🤖 En savoir plus</button>'
       + '</div></div>';
     L.marker([m.lat, m.lon], { icon:icon }).addTo(markerLayer).bindPopup(popup, { maxWidth:260 });
   });
 }
+function askMapIA(name) {
+  map.closePopup();
+  var inp = document.getElementById('claude-input');
+  if (inp) inp.value = 'Donne-moi des infos pratiques sur : ' + name + ' (Thaïlande — contexte voyage famille juillet-août 2026)';
+  var topBtns = document.querySelectorAll('.top-nav button');
+  var found = null;
+  topBtns.forEach(function(b){ if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'claude'")) found=b; });
+  switchTab('claude', found);
+}
+
 function isAndroid() { return /android/i.test(navigator.userAgent); }
 function openCityMapper(lat, lon, encodedName) {
   var webUrl = 'https://citymapper.com/directions?endcoord=' + lat + ',' + lon + '&endname=' + encodedName;
@@ -2795,7 +2809,9 @@ function saveGuideVisited(obj) { try { localStorage.setItem(GUIDE_VISITED_KEY, J
 function toggleGuideAddForm() {
   var form = document.getElementById('guide-add-form');
   if (form) form.classList.toggle('open');
-  ['ga-name','ga-url','ga-desc','ga-price','ga-open','ga-tip'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  ['ga-name','ga-url','ga-desc','ga-price','ga-open','ga-tip','ga-addr'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  var hidTitle = document.getElementById('guide-add-title'); if(hidTitle) hidTitle.textContent = 'Ajouter un lieu';
+  var hidId = document.getElementById('ga-edit-id'); if(hidId) hidId.value = '';
   var st = document.getElementById('ga-status'); if(st) st.textContent='';
 }
 
@@ -2819,31 +2835,44 @@ function saveGuideItemManual() {
   var name = (document.getElementById('ga-name')||{}).value||''; name = name.trim();
   if (!name) { var st=document.getElementById('ga-status'); if(st) st.textContent='Saisis le nom du lieu.'; return; }
   var status = document.getElementById('ga-status');
-  if (status) { status.textContent = 'Recherche de la position GPS...'; }
-  var url = (document.getElementById('ga-url')||{}).value||'';
-  var desc = (document.getElementById('ga-desc')||{}).value||'';
-  var price = (document.getElementById('ga-price')||{}).value||'--';
-  var open = (document.getElementById('ga-open')||{}).value||'--';
-  var tip = (document.getElementById('ga-tip')||{}).value||'';
+  if (status) status.textContent = navigator.onLine ? 'Recherche GPS...' : '';
+  var url    = (document.getElementById('ga-url')||{}).value||'';
+  var desc   = (document.getElementById('ga-desc')||{}).value||'';
+  var price  = (document.getElementById('ga-price')||{}).value||'--';
+  var open   = (document.getElementById('ga-open')||{}).value||'--';
+  var tip    = (document.getElementById('ga-tip')||{}).value||'';
+  var addr   = (document.getElementById('ga-addr')||{}).value||'';
   var budget = parseInt((document.getElementById('ga-budget')||{}).value||'1');
-  var city = getGaCity(); var cityLabel = getGaCityLabel();
-  var cat = (document.getElementById('ga-cat')||{}).value||'manger';
+  var city   = getGaCity(); var cityLabel = getGaCityLabel();
+  var cat    = (document.getElementById('ga-cat')||{}).value||'manger';
+  var editId = parseInt((document.getElementById('ga-edit-id')||{}).value||'0');
   function buildAndSave(lat, lon) {
     var item = {
-      id: Date.now(), name: name, city: city, cityLabel: cityLabel, cat: cat,
-      lat: lat||0, lon: lon||0,
-      desc: desc || 'Lieu ajoute manuellement.',
-      price: price, open: open, tip: tip + (url ? (tip?' — ':'') + 'Source: ' + url.replace('https://','').split('/')[0] : ''),
+      id: editId || Date.now(), name: name, city: city, cityLabel: cityLabel, cat: cat,
+      lat: lat||0, lon: lon||0, addr: addr,
+      desc: desc || 'Lieu ajouté manuellement.',
+      price: price, open: open,
+      tip: tip + (url ? (tip ? ' — ' : '') + 'Source : ' + url.replace('https://','').split('/')[0] : ''),
       tags: [], budget: budget,
       web: url, reviews: url ? [url] : [],
       perso: true, enriched: false
     };
-    var perso = loadGuidePerso(); perso.push(item); saveGuidePerso(perso);
+    var perso = loadGuidePerso();
+    if (editId) {
+      var idx2 = -1; perso.forEach(function(p,i){ if(p.id===editId) idx2=i; });
+      if (idx2 >= 0) perso[idx2] = item; else perso.push(item);
+    } else { perso.push(item); }
+    saveGuidePerso(perso);
+    guideCity = city; guideCat = cat;
+    document.querySelectorAll('#guide-city .fpill').forEach(function(b){ b.classList.toggle('active', b.dataset.city===city); });
+    document.querySelectorAll('#guide-cat .fpill').forEach(function(b){ b.classList.toggle('active', b.dataset.cat===cat); });
+    var form = document.getElementById('guide-add-form'); if(form) form.classList.remove('open');
     if (status) status.textContent = '';
-    toggleGuideAddForm(); renderGuide();
+    renderGuide();
   }
   if (navigator.onLine) {
-    fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(name+' '+cityLabel+' Thailand')+'&format=json&limit=1', {headers:{'Accept-Language':'fr'}})
+    var query = addr ? addr + ' ' + cityLabel + ' Thailand' : name + ' ' + cityLabel + ' Thailand';
+    fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(query)+'&format=json&limit=1', {headers:{'Accept-Language':'fr'}})
       .then(function(r){ return r.json(); })
       .then(function(d){
         var lat = d&&d[0] ? parseFloat(d[0].lat) : 0;
@@ -2854,6 +2883,30 @@ function saveGuideItemManual() {
   } else {
     buildAndSave(0, 0);
   }
+}
+
+function editGuidePerso(item) {
+  /* Ouvrir le formulaire pré-rempli */
+  closeGuideDetail();
+  var form = document.getElementById('guide-add-form');
+  if (form) form.classList.add('open');
+  var set = function(id, val){ var el=document.getElementById(id); if(el) el.value=val||''; };
+  set('ga-name', item.name);
+  set('ga-desc', item.desc);
+  set('ga-price', item.price);
+  set('ga-open', item.open);
+  set('ga-tip', item.tip);
+  set('ga-addr', item.addr||'');
+  set('ga-url', item.web||'');
+  set('ga-budget', item.budget||1);
+  set('ga-edit-id', item.id);
+  var citySel = document.getElementById('ga-city');
+  if (citySel) { citySel.value = item.city; document.getElementById('ga-city-autre-wrap').style.display = item.city==='autre'?'':'none'; }
+  var catSel = document.getElementById('ga-cat');
+  if (catSel) catSel.value = item.cat;
+  var title = document.getElementById('guide-add-title');
+  if (title) title.textContent = 'Modifier le lieu';
+  document.getElementById('guide-main-content').style.display = '';
 }
 
 function deleteGuidePerso(id) {
@@ -2923,7 +2976,7 @@ function showGuideDetailFull(item) {
     (item.lat ? "<button onclick='showOnAppMap("+item.lat+","+item.lon+",\'"+(item.name||'').replace(/'/g,"")+"\')' class='nav-btn' style='background:var(--blue)'>Carte</button>" : '') +
     "</div>" +
     "<button class='guide-visited-btn "+(visited?'visited':'not-visited')+"' onclick='markVisited(currentGuideItem)'>"+(visited?'Deja visite - Retirer':'J\'y suis alle !')+"</button>" +
-    (item.perso ? "<button onclick='deleteGuidePerso("+item.id+")' style='width:100%;padding:10px;margin-top:6px;border:none;border-radius:10px;background:rgba(255,59,48,.1);color:var(--red);font-size:13px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif'>Supprimer ce lieu</button>" : '') +
+    (item.perso ? "<div style='display:flex;gap:6px;margin-top:6px'><button onclick='editGuidePerso(currentGuideItem)' style='flex:1;padding:10px;border:none;border-radius:10px;background:rgba(0,122,255,.1);color:var(--blue);font-size:13px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif'>✏️ Modifier</button><button onclick='deleteGuidePerso("+item.id+")' style='flex:1;padding:10px;border:none;border-radius:10px;background:rgba(255,59,48,.1);color:var(--red);font-size:13px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif'>🗑 Supprimer</button></div>" : '') +
     "</div>";
   document.getElementById("guide-detail").innerHTML = html;
   document.getElementById("guide-main-content").style.display = "none";
