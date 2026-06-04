@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#007AFF">
-<title>🇹🇭 Thaïlande 2026 · v3.2</title>
+<title>🇹🇭 Thaïlande 2026 · v3.5</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"/>
@@ -97,6 +97,8 @@ body{
   display:flex;align-items:stretch;
   padding-bottom:env(safe-area-inset-bottom);
   height:calc(var(--tab-h) + env(safe-area-inset-bottom));
+  -webkit-transform:translateZ(0);
+  transform:translateZ(0);
 }
 @media(prefers-color-scheme:dark){
   .bottom-nav{background:rgba(28,28,30,.92)}
@@ -1037,14 +1039,14 @@ body{
         </select>
       </div>
       <div class="guide-field"><label>Tags (optionnel)</label>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;row-gap:10px" id="ga-tags-wrap">
-          <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="checkbox" value="monchoix" onchange="updateGaTags()"> ⭐ Mon choix</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="checkbox" value="local" onchange="updateGaTags()"> Local</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="checkbox" value="insolite" onchange="updateGaTags()"> Insolite</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="checkbox" value="sf" onchange="updateGaTags()"> Street food</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="checkbox" value="famille" onchange="updateGaTags()"> Famille</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="checkbox" value="gastro" onchange="updateGaTags()"> Gastro</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="checkbox" value="resto" onchange="updateGaTags()"> Resto</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px" id="ga-tags-wrap">
+          <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;padding:6px 0"><input type="checkbox" value="monchoix" onchange="updateGaTags()" style="width:18px;height:18px;accent-color:var(--blue)"> ⭐ Mon choix</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;padding:6px 0"><input type="checkbox" value="local" onchange="updateGaTags()" style="width:18px;height:18px;accent-color:var(--blue)"> 🏠 Local</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;padding:6px 0"><input type="checkbox" value="insolite" onchange="updateGaTags()" style="width:18px;height:18px;accent-color:var(--blue)"> ✨ Insolite</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;padding:6px 0"><input type="checkbox" value="sf" onchange="updateGaTags()" style="width:18px;height:18px;accent-color:var(--blue)"> 🍢 Street food</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;padding:6px 0"><input type="checkbox" value="famille" onchange="updateGaTags()" style="width:18px;height:18px;accent-color:var(--blue)"> 👨‍👩‍👧 Famille</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;padding:6px 0"><input type="checkbox" value="gastro" onchange="updateGaTags()" style="width:18px;height:18px;accent-color:var(--blue)"> ⭐ Gastro</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;padding:6px 0"><input type="checkbox" value="resto" onchange="updateGaTags()" style="width:18px;height:18px;accent-color:var(--blue)"> 🍽 Resto</label>
         </div>
         <input type="hidden" id="ga-tags" value="">
       </div>
@@ -1408,12 +1410,9 @@ var DAYS = [
   { day:10, date:'2 août', stage:'bkk2', stageLabel:'Bangkok 2', emoji:'🏙️', title:'Arrivée Bangkok · Journée libre',
     acts:['13h00 — Arrivée gare Hua Lamphong · check-in hôtel','Après-midi — Repos et récupération après le train','Option : marché ferroviaire Maeklong (si énergie)','🌙 Dîner Silom ou Sathorn'],
     tip:'Maeklong : passage du train à 14h30 et 17h30 — si vous avez l\'énergie après le train de nuit, c\'est faisable en début d\'après-midi.' },
-  { day:11, date:'3 août', stage:'bkk2', stageLabel:'Bangkok 2', emoji:'🏝️', title:'Bangkok → Van Boonsiri Koh Chang',
-    acts:['9h00 — Or Tor Kor Market : meilleur marché frais de Bangkok','Dernier déjeuner Bangkok','Courses provisions pour l\'île (Big C, Tops Market)','17h00 (ou 19h) — Van Boonsiri depuis Khaosan Road vers Koh Chang','🌙 Route et ferry de nuit vers l\'île'],
-    tip:'Réserver le van Boonsiri sur boonsiriferries.com — 1100฿/pers tout inclus (van + ferry). 6h de route.' },
-  { day:12, date:'4 août', stage:'kc', stageLabel:'Koh Chang', emoji:'🌊', title:'Arrivée Koh Chang · Beach Club Villa',
-    acts:['Arrivée Centre Pier · taxi ou songthaew vers la villa','Check-in Beach Club Villa by Utalay','Première plage : Klong Prao, à 10 min à pied','🌙 Dîner sur la plage — restaurant Marco ou Oodies Place'],
-    tip:'Location scooter dès le lendemain : 250฿/jour. Indispensable pour explorer l\'île. Prudence sur les routes mouillées.' },
+  { day:11, date:'3 août', stage:'kc', stageLabel:'Koh Chang', emoji:'🏝️', title:'Bangkok → Koh Chang · Arrivée villa',
+    acts:['Matin — Or Tor Kor Market ou dernier tour Bangkok','Van Boonsiri depuis Khaosan Road (départ matin)','Ferry depuis Laem Ngop → Centre Pier Koh Chang','Après-midi — Arrivée Beach Club Villa by Utalay','🌙 Premier dîner sur l\'île — plage de Klong Prao'],
+    tip:'Réserver le van Boonsiri retour (16 août) dès l\'arrivée — les places partent vite. Location scooter dès le lendemain (250฿/j).' },
   { day:24, date:'16 août', stage:'bkk3', stageLabel:'Bangkok fin', emoji:'⛴️', title:'Koh Chang → Bangkok',
     acts:['Matinée — Dernier bain, plage, achats souvenirs','11h00 — Check-out villa · Van Boonsiri retour','Ferry Centre Pier → continent · Van Bangkok (6h)','Arrivée Bangkok en soirée ~19h-20h','🌙 Check-in hôtel zone Sukhumvit'],
     tip:'Réserver le van Boonsiri retour dès l\'arrivée sur l\'île — les places partent vite.' },
@@ -1609,7 +1608,7 @@ var currentTab = 'itinerary';
 
 /* ─── CLOCK ─── */
 /* ─── DÉTECTION NOUVELLE VERSION ─── */
-var APP_VERSION = '3.2';
+var APP_VERSION = '3.5';
 function checkForUpdate() {
   fetch(window.location.href + '?nocache=' + Date.now(), { cache: 'no-store' })
     .then(function(r) { return r.text(); })
@@ -2323,13 +2322,26 @@ function getCarnetVisitedHtml(isoDate) {
   var lieux = [];
   Object.keys(visited).forEach(function(key) {
     var v = visited[key];
-    if (v && v.isoDate === isoDate) lieux.push(v.name);
+    if (v && v.isoDate === isoDate) lieux.push({ key:key, name:v.name });
   });
   if (!lieux.length) return '';
-  return '<div style="background:rgba(0,122,255,.06);border-radius:10px;padding:8px 12px;margin-bottom:8px;border-left:3px solid var(--blue)">' +
-    '<div style="font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">📍 Lieux visités</div>' +
-    lieux.map(function(n){ return '<div style="font-size:13px;color:var(--label);padding:2px 0">• '+n+'</div>'; }).join('') +
-  '</div>';
+  var html = '<div style="background:rgba(0,122,255,.06);border-radius:10px;padding:8px 12px;margin-bottom:8px;border-left:3px solid var(--blue)">';
+  html += '<div style="font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Lieux visites ce jour</div>';
+  lieux.forEach(function(l) {
+    var noteKey = 'visited_note_'+l.key;
+    var existingNote = '';
+    try { existingNote = localStorage.getItem(noteKey)||''; } catch(e){}
+    html += '<div style="margin-bottom:8px">';
+    html += '<div style="font-size:13px;font-weight:600;color:var(--label);margin-bottom:4px">• '+l.name+'</div>';
+    html += '<textarea data-vkey="'+noteKey+'" placeholder="Tes impressions..." style="width:100%;font-size:12px;font-family:Inter,sans-serif;padding:6px 8px;border:1.5px solid var(--bg4);border-radius:8px;background:var(--bg);color:var(--label);outline:none;resize:none;min-height:50px;line-height:1.5" oninput="saveVisitedNote(this.dataset.vkey,this.value)">'+existingNote+'</textarea>';
+    html += '</div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+function saveVisitedNote(key, val) {
+  try { localStorage.setItem(key, val); } catch(e) {}
 }
 
 function saveDateCarnet(el) {
@@ -2910,23 +2922,27 @@ function confirmIA(url, name) {
     "=== CONTEXTE VOYAGE THAÏLANDE 2026 ===",
     "Famille : 2 adultes + 2 enfants jumeaux de 10 ans (nés le 11/05/2016).",
     "Style : économique, indépendant, curieux, téméraire. Pas de voyages organisés. Street food et restos locaux.",
-    "Dates : 23 juillet – 18 août 2026. Saison des pluies (mousson).",
+    "Dates : 23 juillet – 18 août 2026 (26 jours). Saison des pluies (mousson).",
     "",
-    "ITINÉRAIRE :",
-    "• 24–27 juil. → Bangkok (temples, klongs, marché ferroviaire, Chatuchak)",
-    "• 27 juil. soir → Train de nuit Bangkok → Chiang Mai",
-    "• 28–31 juil. → Chiang Mai (Elephant Nature Park, trek Chiang Dao 2J/1N)",
-    "• 1–2 août → Bangkok (marché ferroviaire Maeklong, préparation Koh Chang)",
-    "• 3–16 août → Koh Chang · Beach Club Villa by Utalay (Klong Prao Beach) — 13 nuits",
-    "• 16–18 août → Bangkok (dernière journée, retour Paris le 18 août)",
-    "",
-    joursLine ? "PRÉCISION : " + joursLine : "",
-    "VILLE CONCERNÉE PAR LA QUESTION : " + ville,
+    "ITINÉRAIRE DÉTAILLÉ :",
+    "• 24–27 juil. → Bangkok 1 (Grand Palais, Wat Pho, klongs, Chatuchak, marché ferroviaire Maeklong)",
+    "• 27 juil. soir → Train de nuit n°9 Bangkok → Chiang Mai (départ ~21h, arrivée ~13h)",
+    "• 28 juil. → Arrivée Chiang Mai · vieille ville",
+    "• 29 juil. → Elephant Nature Park (sanctuaire éthique, réservé)",
+    "• 30–31 juil. → Trek Chiang Dao 2J/1N (parc national, 2e plus haute montagne de Thaïlande)",
+    "• 1 août → Journée Chiang Mai + train de nuit n°9 CM→Bangkok le soir (ventes pas encore ouvertes)",
+    "• 2 août → Arrivée Bangkok 2 · repos",
+    "• 3 août → Bangkok → Van Boonsiri (départ matin) → ferry → Koh Chang (arrivée après-midi)",
+    "• 3–16 août → Koh Chang · Beach Club Villa by Utalay (Klong Prao Beach) — 13 nuits (départ Bangkok matin, arrivée KC après-midi)",
+    "• 16 août → Koh Chang → Van Boonsiri retour → Bangkok 3",
+    "• 17–18 août → Bangkok fin · retour Paris le 18 août",
     "",
     "LOGEMENT CONFIRMÉ : Beach Club Villa by Utalay, Koh Chang (Klong Prao Beach area).",
-    "TRANSPORT : Van Boonsiri (1100฿/pers) pour Koh Chang. Scooter sur l'île (250฿/j).",
-    "BUDGET : économique mais flexible. Revolut pour les paiements. Cash en bahts.",
-    "=================================",
+    "TRANSPORT : Van Boonsiri (1100฿/pers tout inclus) pour Koh Chang aller/retour. Scooter sur l'île (250฿/j). Grab pour Bangkok.",
+    "BUDGET : 5 000 € total. Revolut pour les paiements. Cash en bahts (retrait DAB sur place).",
+    "ENFANTS : 10 ans, actifs, bons marcheurs. Aiment la nature, les animaux, la street food.",
+    joursLine ? "PRÉCISION : " + joursLine : "",
+    "VILLE CONCERNÉE PAR LA QUESTION : " + ville,
     "",
     "MA QUESTION : " + question
   ].filter(Boolean).join("\n");
@@ -3110,9 +3126,9 @@ function markVisited(item) {
   /* Popup de choix de date */
   var today = new Date().toISOString().split('T')[0];
   var modal = document.createElement('div');
-  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box';
   modal.className = 'visited-modal';
-  modal.innerHTML = '<div style="background:var(--card);border-radius:16px;padding:20px;width:100%;max-width:320px;box-shadow:0 8px 32px rgba(0,0,0,.3)">'
+  modal.innerHTML = '<div style="background:var(--card);border-radius:16px;padding:20px;width:100%;max-width:320px;box-shadow:0 8px 32px rgba(0,0,0,.3);box-sizing:border-box">'
     + '<div style="font-size:16px;font-weight:700;color:var(--label);margin-bottom:6px">📍 ' + item.name + '</div>'
     + '<div style="font-size:13px;color:var(--label2);margin-bottom:14px">Quand y es-tu allé ?</div>'
     + '<input type="date" id="visited-date-input" value="' + today + '" style="width:100%;font-size:15px;font-family:Inter,sans-serif;padding:8px 12px;border:1.5px solid var(--bg4);border-radius:10px;background:var(--bg);color:var(--label);outline:none;margin-bottom:14px">'
@@ -3202,7 +3218,7 @@ function showGuideDetailFull(item) {
     (cmDeep ? "<a href='"+cmDeep+"' onclick=\"cmFallback('"+cmWeb+"')\" class='nav-btn' style='background:#007AFF'>🗺 CityMapper</a>" : "") +
     "<a href='grab://open?screenType=BOOKING&destCoord="+item.lat+","+item.lon+"&destName="+encodeURIComponent(item.name)+"' class='nav-btn' style='background:#00B14F'>Grab</a>" +
     "<a href='"+gmUrl+"' target='_blank' class='nav-btn' style='background:#EA4335'>GMaps</a>" +
-    (item.lat ? "<button onclick='showOnAppMap("+item.lat+","+item.lon+",\'"+(item.name||'').replace(/'/g,"")+"\')' class='nav-btn' style='background:var(--blue)'>Carte</button>" : '') +
+    (item.lat ? "<button onclick='showOnAppMap("+item.lat+","+item.lon+",\'"+(item.name||'').replace(/'/g,"")+"\')' class='nav-btn' style='background:var(--blue)'>📌 Carte</button>" : '') +
     "</div>" +
     "<button class='guide-visited-btn "+(visited?'visited':'not-visited')+"' onclick='markVisited(currentGuideItem)'>"+(visited?'Deja visite - Retirer':'J\'y suis alle !')+"</button>" +
     (item.perso ? "<div style='display:flex;gap:6px;margin-top:6px'><button onclick='editGuidePerso(currentGuideItem)' style='flex:1;padding:10px;border:none;border-radius:10px;background:rgba(0,122,255,.1);color:var(--blue);font-size:13px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif'>✏️ Modifier</button><button onclick='deleteGuidePerso("+item.id+")' style='flex:1;padding:10px;border:none;border-radius:10px;background:rgba(255,59,48,.1);color:var(--red);font-size:13px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif'>🗑 Supprimer</button></div>" : '') +
@@ -3283,6 +3299,7 @@ function showGuideDetail(idx) {
         "<a href='" + gmUrl + "' target='_blank' class='nav-btn' style='background:#EA4335'>📍 Maps</a>" +
         "<button onclick='showOnAppMap(" + item.lat + "," + item.lon + ",\"" + item.name.replace(/"/g,'') + "\")' class='nav-btn' style='background:var(--blue)'>📌 Carte app</button>" +
       "</div>" +
+      "<button class='guide-visited-btn " + (isVisited(item)?'visited':'not-visited') + "' onclick='window.currentGuideItem=window._guideItems[" + idx + "];markVisited(window.currentGuideItem)'>" + (isVisited(item)?'✓ Déjà visité':'📍 J\'y suis allé !') + "</button>" +
     "</div>";
   document.getElementById("guide-main-content").style.display = "none";
   document.getElementById("guide-detail").style.display = "";
@@ -3293,10 +3310,10 @@ function closeGuideDetail() {
   document.getElementById("guide-main-content").style.display = "";
 }
 function showOnAppMap(lat, lon, name) {
-  /* Basculer sur l'onglet carte */
-  switchTab('carte', document.querySelector('.top-nav button[onclick*="carte"]') || null);
-  /* Mettre à jour la nav bottom */
-  document.querySelectorAll('.bnav-item').forEach(function(b){ b.classList.toggle('active', b.dataset.tab==='carte'); });
+  /* Basculer sur l'onglet carte — fonctionne mobile et desktop */
+  var topBtn = document.querySelector('.top-nav button[onclick*="carte"]');
+  if (topBtn) { switchTab('carte', topBtn); }
+  else { switchTabFromMore('carte'); }
   setTimeout(function() {
     if (map) {
       map.setView([lat,lon], 15);
