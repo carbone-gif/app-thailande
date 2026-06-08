@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#007AFF">
-<title>🇹🇭 Thaïlande 2026 · v3.6</title>
+<title>🇹🇭 Thaïlande 2026 · v3.7</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"/>
@@ -113,7 +113,10 @@ body{
   transition:color .15s;
   min-width:0;
 }
-.bnav-item.active{color:var(--blue)}
+.bnav-item.active{color:var(--blue);font-weight:700;}
+.bnav-item.active .bnav-icon{filter:drop-shadow(0 0 3px rgba(0,122,255,.5));}
+.bnav-item.active::before{content:'';position:absolute;top:0;left:20%;right:20%;height:2.5px;background:var(--blue);border-radius:0 0 3px 3px;}
+.bnav-item{position:relative;}
 .bnav-icon{font-size:20px;line-height:1}
 .bnav-more{position:relative}
 /* More menu */
@@ -1168,7 +1171,7 @@ body{
       <div class="transport-link-info"><div class="transport-link-title">12go.asia</div><div class="transport-link-sub">Trains · Bus · Ferries · Vols en Thaïlande</div></div>
       <span class="transport-link-arr">↗</span>
     </a>
-    <a href="https://www.boonsiriferries.com" target="_blank" class="transport-link-row">
+    <a href="https://boonsiri.com" target="_blank" class="transport-link-row">
       <span class="transport-link-icon">⛴️</span>
       <div class="transport-link-info"><div class="transport-link-title">Boonsiri Ferries</div><div class="transport-link-sub">Van + ferry Koh Chang — 1 100 ฿/pers tout inclus</div></div>
       <span class="transport-link-arr">↗</span>
@@ -1206,7 +1209,7 @@ body{
         <div class="resa-sub">2 août · Depuis Khaosan Road · 17h ou 19h</div>
         <div class="resa-tip">💡 Réserver aussi le retour dès l'arrivée sur l'île !</div>
       </div>
-      <a href="https://www.boonsiriferries.com" target="_blank" class="resa-btn">Réserver</a>
+      <a href="https://boonsiri.com" target="_blank" class="resa-btn">Réserver</a>
     </div>
     <div class="resa-row">
       <span style="font-size:20px;flex-shrink:0">⛴️</span>
@@ -1215,7 +1218,7 @@ body{
         <div class="resa-sub">16 août · Retour vers Bangkok · ~6h</div>
         <div class="resa-tip">💡 Réserver dès les premiers jours sur l'île</div>
       </div>
-      <a href="https://www.boonsiriferries.com" target="_blank" class="resa-btn">Réserver</a>
+      <a href="https://boonsiri.com" target="_blank" class="resa-btn">Réserver</a>
     </div>
   </div>
 
@@ -1619,7 +1622,7 @@ var currentTab = 'itinerary';
 
 /* ─── CLOCK ─── */
 /* ─── DÉTECTION NOUVELLE VERSION ─── */
-var APP_VERSION = '3.6';
+var APP_VERSION = '3.7';
 function checkForUpdate() {
   fetch(window.location.href + '?nocache=' + Date.now(), { cache: 'no-store' })
     .then(function(r) { return r.text(); })
@@ -2014,20 +2017,21 @@ function deleteDepLibre(idx) {
 
 /* ─── CALENDRIER ITINÉRAIRE ─── */
 var ITIN_CAL_DATA = [
-  // [jour du mois, mois(0-indexed), couleur-css, ville-abrégée, icone-transport|null]
-  // Juillet
+  // Juillet — Bangkok 1
   {d:24,m:6,cls:'ic-bkk',city:'BKK',tr:null},
   {d:25,m:6,cls:'ic-bkk',city:'BKK',tr:null},
   {d:26,m:6,cls:'ic-bkk',city:'BKK',tr:null},
-  {d:27,m:6,cls:'ic-transit',city:'Train',tr:'🚂'},
+  {d:27,m:6,cls:'ic-transit',city:'Train',tr:'🚂'}, // Train nuit → CM
+  // Chiang Mai
+  {d:28,m:6,cls:'ic-cm',city:'CM',tr:null}, // Arrivée CM
+  {d:29,m:6,cls:'ic-cm',city:'CM',tr:null}, // Elephant Nature Park
+  {d:30,m:6,cls:'ic-cm',city:'CM',tr:null}, // Trek Chiang Dao J1
+  {d:31,m:6,cls:'ic-cm',city:'CM',tr:null}, // Trek Chiang Dao J2
   // Août
-  {d:28,m:6,cls:'ic-cm',city:'CM',tr:null},
-  {d:29,m:6,cls:'ic-cm',city:'CM',tr:null},
-  {d:30,m:6,cls:'ic-cm',city:'CM',tr:null},
-  {d:31,m:6,cls:'ic-transit',city:'Vol',tr:'✈️'},
-  {d:1,m:7,cls:'ic-bkk',city:'BKK',tr:null},
-  {d:2,m:7,cls:'ic-transit',city:'Ferry',tr:'⛴️'},
-  {d:3,m:7,cls:'ic-kc',city:'KC',tr:null},
+  {d:1,m:7,cls:'ic-transit',city:'Train',tr:'🚂'}, // Journée CM + train nuit → BKK
+  {d:2,m:7,cls:'ic-bkk',city:'BKK',tr:null}, // Arrivée Bangkok 2
+  {d:3,m:7,cls:'ic-transit',city:'Ferry',tr:'⛴️'}, // BKK → KC (van matin + ferry apm)
+  // Koh Chang
   {d:4,m:7,cls:'ic-kc',city:'KC',tr:null},
   {d:5,m:7,cls:'ic-kc',city:'KC',tr:null},
   {d:6,m:7,cls:'ic-kc',city:'KC',tr:null},
@@ -2040,9 +2044,10 @@ var ITIN_CAL_DATA = [
   {d:13,m:7,cls:'ic-kc',city:'KC',tr:null},
   {d:14,m:7,cls:'ic-kc',city:'KC',tr:null},
   {d:15,m:7,cls:'ic-kc',city:'KC',tr:null},
-  {d:16,m:7,cls:'ic-transit',city:'Ferry',tr:'⛴️'},
+  {d:16,m:7,cls:'ic-transit',city:'Ferry',tr:'⛴️'}, // Retour KC → BKK
+  // Bangkok fin
   {d:17,m:7,cls:'ic-bkk',city:'BKK',tr:null},
-  {d:18,m:7,cls:'ic-transit',city:'Vol',tr:'✈️'},
+  {d:18,m:7,cls:'ic-transit',city:'Vol',tr:'✈️'}, // Retour Paris
 ];
 /* Correspondance date → numéro de jour DAYS */
 var ITIN_DAY_MAP = {
@@ -3534,7 +3539,7 @@ function savePhoto(day, url) {
 var URGENTS = [
   { id:'train', label:'Train n°9 CM→BKK — 1 août (surveiller 12go.asia)', url:'https://12go.asia/fr/travel/chiang-mai/bangkok' },
   { id:'elephant', label:'Elephant Nature Park — 29 juil. (elephantnaturepark.org)', url:'https://www.elephantnaturepark.org' },
-  { id:'boonsiri', label:'Van Boonsiri aller — 2 août (boonsiriferries.com)', url:'https://www.boonsiriferries.com' },
+  { id:'boonsiri', label:'Van Boonsiri aller — 2 août (boonsiriferries.com)', url:'https://boonsiri.com' },
   { id:'vol', label:'Vol Chiang Mai → Bangkok — 31 juil.', url:'https://12go.asia/fr/travel/chiang-mai/bangkok' },
 ];
 var URG_KEY = 'thai2026_urg';
