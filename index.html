@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#007AFF">
-<title>🇹🇭 Thaïlande 2026 · v3.7</title>
+<title>🇹🇭 Thaïlande 2026 · v3.8</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"/>
@@ -512,6 +512,13 @@ body{
 @media(prefers-color-scheme:dark){.guide-visited-btn.not-visited{color:var(--green)}}
 .guide-card.perso{border:1.5px solid rgba(0,122,255,.3);}
 .guide-card.visited-card{opacity:.65;}
+/* contacts */
+.contact-card{background:var(--card);border-radius:var(--rad-lg);padding:14px 16px;margin-bottom:8px;box-shadow:var(--sh);}
+.contact-name{font-size:15px;font-weight:700;color:var(--label);margin-bottom:4px;}
+.contact-cat{font-size:11px;font-weight:600;color:var(--blue);background:rgba(0,122,255,.1);border-radius:99px;padding:2px 8px;display:inline-block;margin-bottom:8px;}
+.contact-row{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+.contact-row a{font-size:13px;color:var(--blue);text-decoration:none;}
+.contact-note{font-size:12px;color:var(--label2);margin-top:6px;font-style:italic;}
 .visited-stamp{font-size:11px;font-weight:700;color:var(--green);margin-top:4px;}
 .dormir-note{
   background:rgba(52,199,89,.08);border-radius:var(--rad);
@@ -807,6 +814,7 @@ body{
         <a href="https://www.deepl.com/translator#th/fr/" target="_blank" style="font-size:11px;font-weight:600;color:var(--blue);background:rgba(0,122,255,.1);border-radius:6px;padding:3px 8px;text-decoration:none;white-space:nowrap">🔤 DeepL</a>
         <a href="https://translate.google.com/?sl=th&tl=fr&op=translate" target="_blank" style="font-size:11px;font-weight:600;color:var(--blue);background:rgba(0,122,255,.1);border-radius:6px;padding:3px 8px;text-decoration:none;white-space:nowrap">🌐 Google</a>
         <button onclick="showQRCode()" style="font-size:11px;font-weight:600;color:var(--blue);background:rgba(0,122,255,.1);border-radius:6px;padding:3px 8px;border:none;cursor:pointer;font-family:Inter,sans-serif;white-space:nowrap">📱 QR</button>
+        <button onclick="showSettings()" style="font-size:11px;font-weight:600;color:var(--label2);background:var(--bg3);border-radius:6px;padding:3px 8px;border:none;cursor:pointer;font-family:Inter,sans-serif;white-space:nowrap">⚙️</button>
       </div>
     </div>
     <div class="header-badges" style="display:none">
@@ -1134,6 +1142,31 @@ body{
   <div id="dep-recap-table"></div>
 </div>
 
+<div id="tab-contacts" class="tab-panel" style="display:none">
+  <button class="guide-add-btn" onclick="toggleContactForm()">➕ Ajouter un contact</button>
+  <div class="guide-add-form" id="contact-add-form">
+    <div class="guide-field"><label>Nom *</label><input type="text" id="ct-name" placeholder="Ex: Nong — chauffeur Bangkok"></div>
+    <div class="guide-field"><label>Catégorie</label>
+      <select id="ct-cat">
+        <option value="chauffeur">🚗 Chauffeur</option>
+        <option value="guide">🧭 Guide</option>
+        <option value="hotel">🏨 Hébergement</option>
+        <option value="resto">🍜 Restaurant</option>
+        <option value="activite">🎯 Activité</option>
+        <option value="autre">📌 Autre</option>
+      </select>
+    </div>
+    <div class="guide-field"><label>Téléphone / WhatsApp</label><input type="tel" id="ct-phone" placeholder="+66 81 234 5678"></div>
+    <div class="guide-field"><label>Source (forum, blog...)</label><input type="text" id="ct-source" placeholder="Ex: forum routard"></div>
+    <div class="guide-field"><label>Notes</label><textarea id="ct-notes" placeholder="Tarif, conseil, contexte..."></textarea></div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button onclick="toggleContactForm()" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--sep-color);background:none;color:var(--label2);font-size:14px;cursor:pointer;font-family:Inter,sans-serif">Annuler</button>
+      <button onclick="saveContact()" style="flex:1;padding:10px;border-radius:10px;border:none;background:var(--blue);color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">Enregistrer</button>
+    </div>
+  </div>
+  <div id="contacts-list"></div>
+</div>
+
 <div id="tab-claude" class="tab-panel" style="display:none">
   <div class="ia-hero">
     <div class="ia-hero-title">🤖 Demander à une IA</div>
@@ -1370,6 +1403,7 @@ body{
   <button class="more-item" onclick="switchTabFromMore('checklist')"><span class="more-icon">✅</span> Checklist</button>
   <button class="more-item" onclick="switchTabFromMore('carnet')"><span class="more-icon">📓</span> Carnet</button>
   <button class="more-item" onclick="switchTabFromMore('claude')"><span class="more-icon">🤖</span> IA</button>
+  <button class="more-item" onclick="switchTabFromMore('contacts')"><span class="more-icon">📋</span> Contacts</button>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
@@ -1622,7 +1656,7 @@ var currentTab = 'itinerary';
 
 /* ─── CLOCK ─── */
 /* ─── DÉTECTION NOUVELLE VERSION ─── */
-var APP_VERSION = '3.7';
+var APP_VERSION = '3.8';
 function checkForUpdate() {
   fetch(window.location.href + '?nocache=' + Date.now(), { cache: 'no-store' })
     .then(function(r) { return r.text(); })
@@ -1665,6 +1699,7 @@ function switchTab(name, btnEl) {
   if (name === 'depenses') { renderDepenses(); }
   if (name === 'home') { renderHome(); }
   if (name === 'itinerary') { renderUrgents(); renderItinCalendar(); }
+  if (name === 'contacts') { renderContacts(); }
   if (name === 'carte') {
     if (!mapInited) { mapInited = true; setTimeout(initMap, 80); }
     else if (map) { setTimeout(function() { map.invalidateSize(); }, 80); }
@@ -2924,6 +2959,136 @@ function openIA(url, name) {
   window._iaUrl = url; window._iaName = name; window._iaQuestion = question; window._iaVille = '';
 }
 function closeIAModal(){ var m=document.querySelector('.ia-modal'); if(m) m.remove(); }
+
+/* ─── CONTACTS ─── */
+var CONTACTS_KEY = 'thai2026_contacts';
+function loadContacts() { try { return JSON.parse(localStorage.getItem(CONTACTS_KEY)) || []; } catch(e) { return []; } }
+function saveContacts(arr) { try { localStorage.setItem(CONTACTS_KEY, JSON.stringify(arr)); } catch(e) {} }
+
+var CAT_LABELS = { chauffeur:'🚗 Chauffeur', guide:'🧭 Guide', hotel:'🏨 Hébergement', resto:'🍜 Restaurant', activite:'🎯 Activité', autre:'📌 Autre' };
+
+function toggleContactForm() {
+  var form = document.getElementById('contact-add-form');
+  if (form) form.classList.toggle('open');
+  ['ct-name','ct-phone','ct-source','ct-notes'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+}
+
+function saveContact() {
+  var name = (document.getElementById('ct-name')||{}).value||''; name = name.trim();
+  if (!name) return;
+  var contact = {
+    id: Date.now(),
+    name: name,
+    cat: (document.getElementById('ct-cat')||{}).value||'autre',
+    phone: (document.getElementById('ct-phone')||{}).value||'',
+    source: (document.getElementById('ct-source')||{}).value||'',
+    notes: (document.getElementById('ct-notes')||{}).value||''
+  };
+  var contacts = loadContacts(); contacts.push(contact); saveContacts(contacts);
+  toggleContactForm(); renderContacts();
+}
+
+function deleteContact(id) {
+  if (!confirm('Supprimer ce contact ?')) return;
+  saveContacts(loadContacts().filter(function(c){ return c.id !== id; }));
+  renderContacts();
+}
+
+function renderContacts() {
+  var el = document.getElementById('contacts-list'); if (!el) return;
+  var contacts = loadContacts();
+  if (!contacts.length) {
+    el.innerHTML = '<div style="text-align:center;padding:32px;color:var(--label2);font-size:14px">Aucun contact.<br>Ajoute tes chauffeurs, guides et bonnes adresses.</div>';
+    return;
+  }
+  /* Grouper par catégorie */
+  var groups = {};
+  contacts.forEach(function(c){ if(!groups[c.cat]) groups[c.cat]=[]; groups[c.cat].push(c); });
+  var html = '';
+  Object.keys(groups).forEach(function(cat) {
+    html += '<div style="font-size:11px;font-weight:600;color:var(--label2);text-transform:uppercase;letter-spacing:.06em;padding:8px 4px 4px">' + (CAT_LABELS[cat]||cat) + '</div>';
+    groups[cat].forEach(function(c) {
+      html += '<div class="contact-card">';
+      html += '<div style="display:flex;align-items:flex-start;justify-content:space-between">';
+      html += '<div><div class="contact-name">' + c.name + '</div>';
+      if (c.phone) html += '<div class="contact-row"><a href="tel:' + c.phone + '">📞 ' + c.phone + '</a>&nbsp;&nbsp;<a href="https://wa.me/' + c.phone.replace(/[^0-9]/g,'') + '" target="_blank">💬 WhatsApp</a></div>';
+      if (c.source) html += '<div style="font-size:11px;color:var(--label3)">Source : ' + c.source + '</div>';
+      if (c.notes) html += '<div class="contact-note">' + c.notes + '</div>';
+      html += '</div>';
+      html += '<button onclick="deleteContact(' + c.id + ')" style="background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:0 0 0 8px;flex-shrink:0">🗑</button>';
+      html += '</div></div>';
+    });
+  });
+  el.innerHTML = html;
+}
+
+/* ─── EXPORT / IMPORT ─── */
+function exportData() {
+  var data = {
+    version: APP_VERSION,
+    exported: new Date().toISOString(),
+    notes: localStorage.getItem('thai2026_notes') || '{}',
+    libre: localStorage.getItem('thai2026_libre') || '[]',
+    depenses: localStorage.getItem('thai2026_dep_libre') || '[]',
+    guidePerso: localStorage.getItem('thai2026_guide_perso') || '[]',
+    guideVisited: localStorage.getItem('thai2026_guide_visited') || '{}',
+    contacts: localStorage.getItem(CONTACTS_KEY) || '[]',
+    checklist: localStorage.getItem('thai2026_checklist') || '{}'
+  };
+  var blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'thailande2026_backup_' + new Date().toISOString().split('T')[0] + '.json';
+  a.click();
+  showToast('Données exportées !');
+}
+
+function importData() {
+  var input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json';
+  input.onchange = function(e) {
+    var file = e.target.files[0]; if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      try {
+        var data = JSON.parse(ev.target.result);
+        if (data.notes) localStorage.setItem('thai2026_notes', data.notes);
+        if (data.libre) localStorage.setItem('thai2026_libre', data.libre);
+        if (data.depenses) localStorage.setItem('thai2026_dep_libre', data.depenses);
+        if (data.guidePerso) localStorage.setItem('thai2026_guide_perso', data.guidePerso);
+        if (data.guideVisited) localStorage.setItem('thai2026_guide_visited', data.guideVisited);
+        if (data.contacts) localStorage.setItem(CONTACTS_KEY, data.contacts);
+        if (data.checklist) localStorage.setItem('thai2026_checklist', data.checklist);
+        showToast('Données importées ! Rechargement...');
+        setTimeout(function(){ location.reload(); }, 1500);
+      } catch(e) { showToast('Erreur : fichier invalide'); }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+/* ─── SETTINGS MODAL ─── */
+function showSettings() {
+  var modal = document.createElement('div');
+  modal.className = 'ia-modal';
+  modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:flex-end;justify-content:center;padding:0;box-sizing:border-box';
+  var html = '<div style="background:var(--card);border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:500px;box-shadow:0 -4px 32px rgba(0,0,0,.2)">';
+  html += '<div style="width:36px;height:4px;background:var(--bg4);border-radius:99px;margin:0 auto 16px"></div>';
+  html += '<div style="font-size:17px;font-weight:700;color:var(--label);margin-bottom:16px">⚙️ Paramètres</div>';
+  html += '<div style="font-size:12px;font-weight:600;color:var(--label2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Mes données</div>';
+  html += '<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">';
+  html += '<button onclick="exportData()" style="padding:12px;border-radius:12px;border:none;background:rgba(52,199,89,.12);color:#248A3D;font-size:14px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;text-align:left">📤 Exporter toutes mes données</button>';
+  html += '<button onclick="importData()" style="padding:12px;border-radius:12px;border:none;background:rgba(0,122,255,.1);color:var(--blue);font-size:14px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;text-align:left">📥 Importer une sauvegarde</button>';
+  html += '</div>';
+  html += '<div style="font-size:12px;font-weight:600;color:var(--label2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Contacts & Ressources</div>';
+  html += '<button onclick="closeIAModal();switchTabFromMore(\'contacts\')" style="padding:12px;border-radius:12px;border:none;background:var(--bg3);color:var(--label);font-size:14px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;text-align:left;width:100%;margin-bottom:16px">📋 Voir mes contacts</button>';
+  html += '<button onclick="closeIAModal()" style="width:100%;padding:12px;border-radius:12px;border:1.5px solid var(--sep-color);background:none;color:var(--label2);font-size:14px;cursor:pointer;font-family:Inter,sans-serif">Fermer</button>';
+  html += '</div>';
+  modal.innerHTML = html;
+  modal.onclick = function(e){ if(e.target===modal) closeIAModal(); };
+  document.body.appendChild(modal);
+}
 
 function showQRCode() {
   var url = 'https://carbone-gif.github.io/app-thailande/';
